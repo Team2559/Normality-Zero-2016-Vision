@@ -11,15 +11,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -80,8 +73,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 
 		public void run() {
 			outputTable = Robot.getTable();
-			URL _url = null;
-			URLConnection uc = null;
 			while (!this.destroyed) {
 				try {
 					FOXACID.this.ipChanged = false;
@@ -157,6 +148,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 		FOXACIDCONFIGURE.maxSatLabel.setText("maxSat: " + FOXACIDCONFIGURE.maxSatSlider.getValue());
 		FOXACIDCONFIGURE.minValLabel.setText("minVal: " + FOXACIDCONFIGURE.minValSlider.getValue());
 		FOXACIDCONFIGURE.maxValLabel.setText("maxVal: " + FOXACIDCONFIGURE.maxValSlider.getValue());
+		FOXACIDCONFIGURE.minAreaLabel.setText("minArea: " + FOXACIDCONFIGURE.minAreaSlider.getValue());
 		Mat hsv = new Mat(), thresh = new Mat(), heirarchy = new Mat();
 		Scalar lowerBound = new Scalar(FOXACIDCONFIGURE.getMinHue(),
 				FOXACIDCONFIGURE.getMinSat(), FOXACIDCONFIGURE.getMinVal()), upperBound = new Scalar(
@@ -178,39 +170,41 @@ public class FOXACID extends VideoStreamViewerExtension {
 		// find the contours
 		Imgproc.findContours(thresh.clone(), contours, heirarchy,
 				Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
-
-		for (int i = 0; i < contours.size(); i++) {
-			MatOfPoint matOfPoint = contours.get(i);
+		
+		for (int dre = 0; dre < contours.size(); dre++) {
+			MatOfPoint matOfPoint = contours.get(dre);
 			int width = matOfPoint.width(), height = matOfPoint.height();
-			if ((matOfPoint.width() * matOfPoint.height() <= 22)) {
-				contours.remove(i);
-			} else {
-				System.out.println("--------------------");
-				System.out.println("Passed Width: " + width);
-				System.out.println("Passed Height: " + height);
-				System.out.println("Total: " + width * height);
-				System.out.println("--------------------");
-			}
+			double aspect = width/height;
+			
+			// if area < minArea or aspect ratio < 1
+			if ((width * height <= FOXACIDCONFIGURE.getMinArea()) || aspect < 1) {
+				// everbody forget about dre
+				contours.remove(dre);
+			}			
 		}
-
+		
+		// only one object found
 		if (contours.size() == 1) {
-			System.out.println("only 1 contour");
+			// draw a box around it
 			Rect rec1 = Imgproc.boundingRect(contours.get(0));
 			Imgproc.rectangle(src, rec1.tl(), rec1.br(),
 					new Scalar(255, 255, 0));
+			
+			// calculate center pixel and display info to screen at 1, 20
 			String string = "Target Found at X: " + (rec1.tl().x + rec1.br().x)
 					/ 2 + "Y:" + (rec1.tl().y + rec1.br().y) / 2;
 			Imgproc.putText(src, string, new Point(1, 20),
-					Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
-			
+					Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));			
 			return src;
 		} else {
-			System.out.println("Contours: " + contours.size());
 			ArrayList<Rect> recList = new ArrayList<Rect>();
 			for (MatOfPoint mOP : contours) {
 				recList.add(Imgproc.boundingRect(mOP));
 			}
 
+			// ugliest code 2k16
+			// for real though i think the purpose of this is to figure out how to draw a box
+			// like seriously how many lines of code is this to draw a fucking box
 			try {
 				Point tl = recList.get(0).tl();
 				Point br = recList.get(0).br();
@@ -284,44 +278,40 @@ public class FOXACID extends VideoStreamViewerExtension {
 				}
 
 				Rect bb = new Rect(tl, br);
-				// bb.size();
-				// System.out.println("IT'S THIS TALL: " + bb.height);
-				// Imgproc.rectangle(src, tl, br, new Scalar(255, 255, 0));
-
-				System.out.println("Image processed in "
-						+ (System.currentTimeMillis() - startTime) + " ms.");
 				if (!debug) {
 					try {
-						outputTable.putBoolean("foundTote", true);
+						outputTable.putBoolean("foundTower", true);
 					} catch (Exception e) {
 
 					}
 				}
 				Point closestPoint = new Point(999999, 999999);
+				// this should be the center point of the image
 				Point center = new Point(320, 240);
 				for(Point p : towers) {
 					double closestToCenter = Math.abs(closestPoint.x - center.x);
-					double toteToCenter = Math.abs(p.x - center.x);
-					if(toteToCenter < closestToCenter) {
+					double towerToCenter = Math.abs(p.x - center.x);
+					if(towerToCenter < closestToCenter) {
 						closestPoint = p;
 					}
 				}
 				double distanceFromCenter = center.x - closestPoint.x;
 				if (!debug) {
 					try {
-						outputTable.putNumber("toteOffset", distanceFromCenter);
+						outputTable.putNumber("towerOffset", distanceFromCenter);
 					} catch (Exception ae) {
 						
 					}
 				}
 				return src;
 			} catch (Exception e) {
+				// lol there's no logs
 				Imgproc.putText(src, "Error: check logs", new Point(50, 100),
 						Core.FONT_HERSHEY_PLAIN, 1, new Scalar(0, 0, 255));
 				System.out.print(e);
 				if (!debug) {
 					try {
-						outputTable.putBoolean("foundTote", false);
+						outputTable.putBoolean("f", false);
 					} catch (Exception ae) {
 
 					}

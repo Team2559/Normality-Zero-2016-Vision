@@ -1,6 +1,5 @@
 package edu.normality.smartdashboard.foxacidconfigure;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,14 +18,15 @@ import edu.wpi.first.smartdashboard.properties.Property;
 
 public class FOXACIDCONFIGURE extends StaticWidget {
 	
-	public static final String NAME = "FOXACID Configurer";
+	public static final String NAME = "FOXACID - Configurer";
 	
 	public static final int kMinHue = 50,
 							kMinSat = 120,
 							kMinVal = 100,
 							kMaxHue = 100,
 							kMaxSat = 255,
-							kMaxVal = 255;
+							kMaxVal = 255,
+							kMinArea = 50;
 
 	public static JSlider minHueSlider;
 
@@ -40,14 +40,15 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 
 	public static JSlider maxValSlider;
 	
-	public static JLabel minHueLabel = new JLabel("minHue");
+	public static JSlider minAreaSlider;
+	
+	public static  JLabel minHueLabel = new JLabel("minHue");
 	public static  JLabel minSatLabel = new JLabel("minSat");
 	public static  JLabel minValLabel = new JLabel("minVal");
 	public static  JLabel maxHueLabel = new JLabel("maxHue");
 	public static  JLabel maxSatLabel = new JLabel("maxSat");
 	public static  JLabel maxValLabel = new JLabel("maxVal");
 	public static  JLabel minAreaLabel = new JLabel("minArea");
-	public static  JLabel maxAreaLabel = new JLabel("maxArea");
 	
 	JPanel sliders;	
 	
@@ -62,6 +63,7 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 				maxHueSlider.setValue(kMaxHue);
 				maxValSlider.setValue(kMaxVal);
 				maxSatSlider.setValue(kMaxSat);
+				minAreaSlider.setValue(kMinArea);
 			}
 		});
 		sliders.setLayout(new BoxLayout(sliders, BoxLayout.Y_AXIS));
@@ -73,7 +75,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		minValSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, kMinVal);
 		maxHueSlider = new JSlider(JSlider.HORIZONTAL, 0, 180, kMaxHue);
 		maxSatSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, kMaxSat);
-		maxValSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, kMaxVal);	
+		maxValSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, kMaxVal);
+		minAreaSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, kMinArea);
 		sliders.setPreferredSize(new Dimension(200, 640));
 		
 		minHueSlider.addChangeListener(new ChangeListener() {			
@@ -112,12 +115,19 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 			}
 		});
 		
+		minAreaSlider.addChangeListener(new ChangeListener() {			
+			public void stateChanged(ChangeEvent e) {
+				FOXACIDCONFIGURE.minAreaLabel.setText("minArea: " + FOXACIDCONFIGURE.minAreaSlider.getValue());
+			}
+		});
+		
 		FOXACIDCONFIGURE.minHueLabel.setText("minHue: " + FOXACIDCONFIGURE.minHueSlider.getValue());
 		FOXACIDCONFIGURE.maxHueLabel.setText("maxHue: " + FOXACIDCONFIGURE.maxHueSlider.getValue());
 		FOXACIDCONFIGURE.minSatLabel.setText("minSat: " + FOXACIDCONFIGURE.minSatSlider.getValue());
 		FOXACIDCONFIGURE.maxSatLabel.setText("maxSat: " + FOXACIDCONFIGURE.maxSatSlider.getValue());
 		FOXACIDCONFIGURE.minValLabel.setText("minVal: " + FOXACIDCONFIGURE.minValSlider.getValue());
 		FOXACIDCONFIGURE.maxValLabel.setText("maxVal: " + FOXACIDCONFIGURE.maxValSlider.getValue());
+		FOXACIDCONFIGURE.minAreaLabel.setText("minArea: " + FOXACIDCONFIGURE.minAreaSlider.getValue());
 		
 		sliders.add(jB);
 		sliders.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -135,6 +145,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		sliders.add(maxSatSlider);
 		sliders.add(maxValLabel);
 		sliders.add(maxValSlider);
+		sliders.add(minAreaLabel);
+		sliders.add(minAreaSlider);
 		
 		add(sliders);
 	}
@@ -167,6 +179,10 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	
 	public static int getMaxVal() {
 		return maxValSlider.getValue();
+	}
+	
+	public static int getMinArea() {
+		return minAreaSlider.getValue();
 	}
 	
 }

@@ -48,6 +48,8 @@ public class FOXACID extends VideoStreamViewerExtension {
 	public static final int kMaxSat = 255;
 	public static final int kMaxVal = 255;
 	
+	public static final int[] resolution = {640, 360};
+	
 	public static final boolean debug = false;
 	
 	ITable outputTable;
@@ -148,7 +150,8 @@ public class FOXACID extends VideoStreamViewerExtension {
 		FOXACIDCONFIGURE.maxSatLabel.setText("maxSat: " + FOXACIDCONFIGURE.maxSatSlider.getValue());
 		FOXACIDCONFIGURE.minValLabel.setText("minVal: " + FOXACIDCONFIGURE.minValSlider.getValue());
 		FOXACIDCONFIGURE.maxValLabel.setText("maxVal: " + FOXACIDCONFIGURE.maxValSlider.getValue());
-		FOXACIDCONFIGURE.minAreaLabel.setText("minArea: " + FOXACIDCONFIGURE.minAreaSlider.getValue());
+		FOXACIDCONFIGURE.minHeightLabel.setText("minHeight: " + FOXACIDCONFIGURE.minHeightSlider.getValue());
+		FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
 		Mat hsv = new Mat(), thresh = new Mat(), heirarchy = new Mat();
 		Scalar lowerBound = new Scalar(FOXACIDCONFIGURE.getMinHue(),
 				FOXACIDCONFIGURE.getMinSat(), FOXACIDCONFIGURE.getMinVal()), upperBound = new Scalar(
@@ -172,13 +175,15 @@ public class FOXACID extends VideoStreamViewerExtension {
 				Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		
 		for (int dre = 0; dre < contours.size(); dre++) {
-			MatOfPoint matOfPoint = contours.get(dre);
-			int width = matOfPoint.width(), height = matOfPoint.height();
+			Rect tempRec = Imgproc.boundingRect(contours.get(dre));
+			int width = tempRec.width, height = tempRec.height;
 			double aspect = width/height;
 			
 			// if area < minArea or aspect ratio < 1
-			if ((width * height <= FOXACIDCONFIGURE.getMinArea()) || aspect < 1) {
-				// everbody forget about dre
+			if ((width <= FOXACIDCONFIGURE.getMinWidth()) || 
+				(height <= FOXACIDCONFIGURE.getMinHeight()) || 
+				(aspect < 1.0)) {
+				// everybody forget about dre
 				contours.remove(dre);
 			}			
 		}
@@ -190,13 +195,22 @@ public class FOXACID extends VideoStreamViewerExtension {
 			Imgproc.rectangle(src, rec1.tl(), rec1.br(),
 					new Scalar(255, 255, 0));
 			
+			Imgproc.circle(src, new Point((rec1.tl().x + rec1.br().x) / 2,
+					(rec1.tl().y + rec1.br().y) / 2), 5, new Scalar(0, 0, 255));
+			
 			// calculate center pixel and display info to screen at 1, 20
-			String string = "Target Found at X: " + (rec1.tl().x + rec1.br().x)
+			String string = "(only one) Target Found at X: " + (rec1.tl().x + rec1.br().x)
 					/ 2 + "Y:" + (rec1.tl().y + rec1.br().y) / 2;
+			double width = rec1.width;
+			double height = rec1.height;
+			double aspect = width/height;
 			Imgproc.putText(src, string, new Point(1, 20),
-					Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));			
+					Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
+			Imgproc.putText(src, "Width: " + width + ", Height: " + height + ", Aspect: " + aspect,
+					new Point(1, 50), Core.FONT_HERSHEY_DUPLEX, 1, new Scalar(255, 255, 0));
 			return src;
 		} else {
+			Imgproc.putText(src, "Contours: " + contours.size(), new Point(1, 80), Core.FONT_HERSHEY_DUPLEX, 1, new Scalar(255, 255, 0));
 			ArrayList<Rect> recList = new ArrayList<Rect>();
 			for (MatOfPoint mOP : contours) {
 				recList.add(Imgproc.boundingRect(mOP));
@@ -272,7 +286,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 							(tl.y + br.y) / 2), 5, new Scalar(0, 0, 255));
 					towers.add(new Point((tl.x + br.x) / 2, (tl.y + br.y) / 2));
 					} else {
-						Imgproc.putText(src, "Error: check logs", new Point(320, 240),
+						Imgproc.putText(src, "Error: check logs", new Point(resolution[0]/2, resolution[1]/2),
 								Core.FONT_HERSHEY_TRIPLEX, 1, new Scalar(0, 0, 255));
 					}
 				}
@@ -287,7 +301,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 				}
 				Point closestPoint = new Point(999999, 999999);
 				// this should be the center point of the image
-				Point center = new Point(320, 240);
+				Point center = new Point(resolution[0]/2, resolution[1]/2);
 				for(Point p : towers) {
 					double closestToCenter = Math.abs(closestPoint.x - center.x);
 					double towerToCenter = Math.abs(p.x - center.x);
@@ -334,7 +348,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 					11 });
 
 	public void init() {
-		setPreferredSize(new Dimension(100, 100));
+		setPreferredSize(new Dimension(resolution[0], resolution[1]));
 		this.ipString = this.ipProperty.getSaveValue();
 		this.bgThread.start();
 		revalidate();

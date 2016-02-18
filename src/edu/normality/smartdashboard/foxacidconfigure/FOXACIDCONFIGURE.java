@@ -26,7 +26,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 							kMaxHue = 100,
 							kMaxSat = 255,
 							kMaxVal = 255,
-							kMinArea = 50;
+							kMinHeight = 50,
+							kMinWidth = 50;
 
 	public static JSlider minHueSlider;
 
@@ -40,7 +41,9 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 
 	public static JSlider maxValSlider;
 	
-	public static JSlider minAreaSlider;
+	public static JSlider minHeightSlider;
+	
+	public static JSlider minWidthSlider;
 	
 	public static  JLabel minHueLabel = new JLabel("minHue");
 	public static  JLabel minSatLabel = new JLabel("minSat");
@@ -48,7 +51,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	public static  JLabel maxHueLabel = new JLabel("maxHue");
 	public static  JLabel maxSatLabel = new JLabel("maxSat");
 	public static  JLabel maxValLabel = new JLabel("maxVal");
-	public static  JLabel minAreaLabel = new JLabel("minArea");
+	public static  JLabel minHeightLabel = new JLabel("minHeight");
+	public static  JLabel minWidthLabel = new JLabel("minWidth");
 	
 	JPanel sliders;	
 	
@@ -63,7 +67,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 				maxHueSlider.setValue(kMaxHue);
 				maxValSlider.setValue(kMaxVal);
 				maxSatSlider.setValue(kMaxSat);
-				minAreaSlider.setValue(kMinArea);
+				minHeightSlider.setValue(kMinHeight);
+				minWidthSlider.setValue(kMinWidth);
 			}
 		});
 		sliders.setLayout(new BoxLayout(sliders, BoxLayout.Y_AXIS));
@@ -76,7 +81,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		maxHueSlider = new JSlider(JSlider.HORIZONTAL, 0, 180, kMaxHue);
 		maxSatSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, kMaxSat);
 		maxValSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, kMaxVal);
-		minAreaSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, kMinArea);
+		minHeightSlider = new JSlider(JSlider.HORIZONTAL, 0, 500, kMinHeight);
+		minWidthSlider = new JSlider(JSlider.HORIZONTAL, 0, 500, kMinWidth);
 		sliders.setPreferredSize(new Dimension(200, 640));
 		
 		minHueSlider.addChangeListener(new ChangeListener() {			
@@ -115,9 +121,15 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 			}
 		});
 		
-		minAreaSlider.addChangeListener(new ChangeListener() {			
+		minHeightSlider.addChangeListener(new ChangeListener() {			
 			public void stateChanged(ChangeEvent e) {
-				FOXACIDCONFIGURE.minAreaLabel.setText("minArea: " + FOXACIDCONFIGURE.minAreaSlider.getValue());
+				FOXACIDCONFIGURE.minHeightLabel.setText("minHeight: " + FOXACIDCONFIGURE.minHeightSlider.getValue());
+			}
+		});
+		
+		minWidthSlider.addChangeListener(new ChangeListener() {			
+			public void stateChanged(ChangeEvent e) {
+				FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
 			}
 		});
 		
@@ -127,7 +139,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		FOXACIDCONFIGURE.maxSatLabel.setText("maxSat: " + FOXACIDCONFIGURE.maxSatSlider.getValue());
 		FOXACIDCONFIGURE.minValLabel.setText("minVal: " + FOXACIDCONFIGURE.minValSlider.getValue());
 		FOXACIDCONFIGURE.maxValLabel.setText("maxVal: " + FOXACIDCONFIGURE.maxValSlider.getValue());
-		FOXACIDCONFIGURE.minAreaLabel.setText("minArea: " + FOXACIDCONFIGURE.minAreaSlider.getValue());
+		FOXACIDCONFIGURE.minHeightLabel.setText("minHeight: " + FOXACIDCONFIGURE.minHeightSlider.getValue());
+		FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
 		
 		sliders.add(jB);
 		sliders.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -145,8 +158,10 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		sliders.add(maxSatSlider);
 		sliders.add(maxValLabel);
 		sliders.add(maxValSlider);
-		sliders.add(minAreaLabel);
-		sliders.add(minAreaSlider);
+		sliders.add(minHeightLabel);
+		sliders.add(minHeightSlider);
+		sliders.add(minWidthLabel);
+		sliders.add(minWidthSlider);
 		
 		add(sliders);
 	}
@@ -181,8 +196,12 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		return maxValSlider.getValue();
 	}
 	
-	public static int getMinArea() {
-		return minAreaSlider.getValue();
+	public static int getMinHeight() {
+		return minHeightSlider.getValue();
+	}
+	
+	public static int getMinWidth() {
+		return minWidthSlider.getValue();
 	}
 	
 }

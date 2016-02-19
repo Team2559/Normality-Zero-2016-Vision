@@ -58,6 +58,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+		NetworkTable.setClientMode();
 	}
 
 	public static void main(String[] args) {
@@ -117,8 +118,8 @@ public class FOXACID extends VideoStreamViewerExtension {
 						FOXACID.this.imageToDraw = image;
 						original.release();
 						processed.release();
-						System.out.println("Successfully drawn image: "
-								+ img.getWidth() + " x " + img.getHeight());
+//						System.out.println("Successfully drawn image: "
+//								+ img.getWidth() + " x " + img.getHeight());
 						this.lastRepaint = System.currentTimeMillis();
 						FOXACID.this.repaint();
 					}
@@ -152,6 +153,9 @@ public class FOXACID extends VideoStreamViewerExtension {
 		FOXACIDCONFIGURE.maxValLabel.setText("maxVal: " + FOXACIDCONFIGURE.maxValSlider.getValue());
 		FOXACIDCONFIGURE.minHeightLabel.setText("minHeight: " + FOXACIDCONFIGURE.minHeightSlider.getValue());
 		FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
+		FOXACIDCONFIGURE.minAspectLabel.setText("minAspect: " + (double)FOXACIDCONFIGURE.minAspectSlider.getValue() / 500d);
+		FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 500d);
+		
 		Mat hsv = new Mat(), thresh = new Mat(), heirarchy = new Mat();
 		Scalar lowerBound = new Scalar(FOXACIDCONFIGURE.getMinHue(),
 				FOXACIDCONFIGURE.getMinSat(), FOXACIDCONFIGURE.getMinVal()), upperBound = new Scalar(
@@ -174,166 +178,329 @@ public class FOXACID extends VideoStreamViewerExtension {
 		Imgproc.findContours(thresh.clone(), contours, heirarchy,
 				Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		
+		System.out.println("Contours size before: " + contours.size());
 		for (int dre = 0; dre < contours.size(); dre++) {
 			Rect tempRec = Imgproc.boundingRect(contours.get(dre));
 			int width = tempRec.width, height = tempRec.height;
-			double aspect = width/height;
+			double aspect = (double)width /height;
 			
-			// if area < minArea or aspect ratio < 1
-			if ((width <= FOXACIDCONFIGURE.getMinWidth()) || 
-				(height <= FOXACIDCONFIGURE.getMinHeight()) || 
-				(aspect < 1.0)) {
-				// everybody forget about dre
-				contours.remove(dre);
+			boolean shouldRemove = false;			
+			if (width <= FOXACIDCONFIGURE.getMinWidth()) {
+				shouldRemove = true;
 			}			
+			if (height <= FOXACIDCONFIGURE.getMinHeight()) {
+				shouldRemove = true;
+			}			
+			if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
+				shouldRemove = true;
+			}			
+			if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
+				shouldRemove = true;
+			}
+			
+			if (shouldRemove) {
+				contours.remove(dre);
+			}
+		}		
+		System.out.println("Contours size after: " + contours.size());
+		System.out.println("-------------------");
+		
+		if(contours.size() == 0) {
+			try {
+				outputTable.putBoolean("foundTower", false);
+				outputTable.putNumber("towerXOffset", 0);
+				outputTable.putNumber("towerYOffset", 0);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 		// only one object found
 		if (contours.size() == 1) {
 			// draw a box around it
 			Rect rec1 = Imgproc.boundingRect(contours.get(0));
+			
+			int width = rec1.width;
+			int height = rec1.height;
+			double aspect = (double)width /height;
+			boolean shouldRemove = false;
+			
+			if (width <= FOXACIDCONFIGURE.getMinWidth()) {
+				shouldRemove = true;
+				System.out.println("-------");
+				System.out.println("Failed width validation!");
+				System.out.println("Current Width (" + width + ") is less than " + FOXACIDCONFIGURE.getMinWidth());
+				System.out.println("-------");
+			}			
+			if (height <= FOXACIDCONFIGURE.getMinHeight()) {
+				shouldRemove = true;
+				System.out.println("-------");
+				System.out.println("Failed height validation!");
+				System.out.println("Current Height (" + height + ") is less than " + FOXACIDCONFIGURE.getMinHeight());
+				System.out.println("-------");
+			}			
+			if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
+				shouldRemove = true;
+				System.out.println("-------");
+				System.out.println("Failed aspect minimum validation!");
+				System.out.println("Current Aspect (" + aspect + ") is less than 1.");
+				System.out.println("-------");
+			}			
+			if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
+				shouldRemove = true;
+				System.out.println("-------");
+				System.out.println("Failed aspect maximum validation!");
+				System.out.println("Current Aspect (" + aspect + ") is greater than 2.5.");
+				System.out.println("-------");
+			}
+			
+			if (shouldRemove) {
+				try {
+					outputTable.putBoolean("foundTower", false);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return src;
+			}
+			
+			// draw a circle at midpoint
+			Point centerPoint = new Point((rec1.tl().x + rec1.br().x) / 2,
+					(rec1.tl().y + rec1.br().y) / 2);
+			
+			Point imageCenter = new Point(resolution[0]/2, resolution[1]/2);
+			double xOffset = imageCenter.x - centerPoint.x;
+			double yOffset = imageCenter.y - centerPoint.y;
+			
+			try {
+				outputTable.putBoolean("foundTower", true);
+				outputTable.putNumber("towerXOffset", xOffset);
+				outputTable.putNumber("towerYOffset", yOffset);
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
 			Imgproc.rectangle(src, rec1.tl(), rec1.br(),
 					new Scalar(255, 255, 0));
-			
-			Imgproc.circle(src, new Point((rec1.tl().x + rec1.br().x) / 2,
-					(rec1.tl().y + rec1.br().y) / 2), 5, new Scalar(0, 0, 255));
-			
+			Imgproc.circle(src, centerPoint, 5, new Scalar(0, 0, 255));
+						
 			// calculate center pixel and display info to screen at 1, 20
 			String string = "(only one) Target Found at X: " + (rec1.tl().x + rec1.br().x)
 					/ 2 + "Y:" + (rec1.tl().y + rec1.br().y) / 2;
-			double width = rec1.width;
-			double height = rec1.height;
-			double aspect = width/height;
+			
+			
 			Imgproc.putText(src, string, new Point(1, 20),
 					Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
 			Imgproc.putText(src, "Width: " + width + ", Height: " + height + ", Aspect: " + aspect,
 					new Point(1, 50), Core.FONT_HERSHEY_DUPLEX, 1, new Scalar(255, 255, 0));
+			String xString = "X: " + (rec1.tl().x + rec1.br().x)
+					/ 2;
+			String yString = "Y:" + (rec1.tl().y + rec1.br().y) / 2;
+			Point center = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 50);
+			Point centerHigher = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 30);
+
+			Imgproc.putText(src, xString, center, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
+			Imgproc.putText(src, yString, centerHigher, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
 			return src;
 		} else {
-			Imgproc.putText(src, "Contours: " + contours.size(), new Point(1, 80), Core.FONT_HERSHEY_DUPLEX, 1, new Scalar(255, 255, 0));
-			ArrayList<Rect> recList = new ArrayList<Rect>();
-			for (MatOfPoint mOP : contours) {
-				recList.add(Imgproc.boundingRect(mOP));
+			Imgproc.putText(src, "Contours: " + contours.size(), new Point(1, 80), Core.FONT_HERSHEY_DUPLEX, 0.5, new Scalar(255, 255, 0));
+			for (int i = 0; i < contours.size(); i++) {
+				Rect rec1 = Imgproc.boundingRect(contours.get(i));
+				
+				int width = rec1.width;
+				int height = rec1.height;
+				double aspect = (double)width /height;
+				boolean shouldRemove = false;
+				
+				if (width <= FOXACIDCONFIGURE.getMinWidth()) {
+					shouldRemove = true;
+					System.out.println("-------");
+					System.out.println("Failed width validation!");
+					System.out.println("Current Width (" + width + ") is less than " + FOXACIDCONFIGURE.getMinWidth());
+					System.out.println("-------");
+				}			
+				if (height <= FOXACIDCONFIGURE.getMinHeight()) {
+					shouldRemove = true;
+					System.out.println("-------");
+					System.out.println("Failed height validation!");
+					System.out.println("Current Height (" + height + ") is less than " + FOXACIDCONFIGURE.getMinHeight());
+					System.out.println("-------");
+				}			
+				if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
+					shouldRemove = true;
+					System.out.println("-------");
+					System.out.println("Failed aspect minimum validation!");
+					System.out.println("Current Aspect (" + aspect + ") is less than 1.");
+					System.out.println("-------");
+				}			
+				if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
+					shouldRemove = true;
+					System.out.println("-------");
+					System.out.println("Failed aspect maximum validation!");
+					System.out.println("Current Aspect (" + aspect + ") is greater than 2.5.");
+					System.out.println("-------");
+				}
+				
+				if (shouldRemove) {
+//					try {
+//						outputTable.putBoolean("foundTower", false);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+					return src;
+				}
+				
+//				Point centerPoint = new Point((rec1.tl().x + rec1.br().x) / 2,
+//						(rec1.tl().y + rec1.br().y) / 2);
+//				
+//				Point imageCenter = new Point(resolution[0]/2, resolution[1]/2);
+//				double xOffset = imageCenter.x - centerPoint.x;
+//				double yOffset = imageCenter.y - centerPoint.y;
+//				
+//				try {
+//					outputTable.putBoolean("foundTower", true);
+//					outputTable.putNumber("towerXOffset", xOffset);
+//					outputTable.putNumber("towerYOffset", yOffset);
+//					
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//				
+				Point tempCenter = new Point((rec1.tl().x + rec1.br().x) / 2,
+						(rec1.tl().y + rec1.br().y) / 2);
+				Imgproc.rectangle(src, rec1.tl(), rec1.br(),
+						new Scalar(255, 255, 0));
+				Imgproc.circle(src, tempCenter, 5, new Scalar(0, 0, 255));
+				String xString = "X: " + (rec1.tl().x + rec1.br().x)
+					/ 2;
+				String yString = "Y:" + (rec1.tl().y + rec1.br().y) / 2;
+				Point center = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 50);
+				Point centerHigher = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 30);
+
+				Imgproc.putText(src, xString, centerHigher, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
+				Imgproc.putText(src, yString, center, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
+				
 			}
-
-			// ugliest code 2k16
-			// for real though i think the purpose of this is to figure out how to draw a box
-			// like seriously how many lines of code is this to draw a fucking box
-			try {
-				Point tl = recList.get(0).tl();
-				Point br = recList.get(0).br();
-				int[] x = new int[recList.size()], y = new int[recList.size()];
-				ArrayList<Rect> boxes = new ArrayList<Rect>();
-				for (int i = 0; i < recList.size(); i++) {
-					tl = recList.get(i).tl();
-					br = recList.get(i).br();
-					if (new Rect(tl, br).height > 30) {
-						boxes.add(new Rect(tl, br));
-					}
-
-				}
-				Rect currentBox = new Rect(), bestFit = new Rect();
-				for (int i = 0; i < boxes.size(); i++) {
-					currentBox = boxes.get(i);
-					double bestDistance = Double.MAX_VALUE;
-					bestFit = null;
-					for (Rect r : boxes) {
-						if (currentBox == r) {
-
-						} else {
-							Point currentBoxCent, loopBoxCent;
-							currentBoxCent = new Point(
-									(currentBox.tl().x + currentBox.br().x) / 2,
-									(currentBox.tl().y + currentBox.br().y) / 2);
-							loopBoxCent = new Point((r.tl().x + r.br().x) / 2,
-									(r.tl().y + r.br().y) / 2);
-							double currToLoopDistance = Math.sqrt(Math.pow(
-									Math.abs(loopBoxCent.x - currentBoxCent.x),
-									2)
-									+ Math.pow(
-											Math.abs(loopBoxCent.y
-													- currentBoxCent.y), 2));
-							if ((currToLoopDistance < bestDistance)) {
-								bestFit = r;
-								bestDistance = currToLoopDistance;
-							}
-
-						}
-					}
-					if(bestFit != null) {
-					Point tl_bf = bestFit.tl();
-					Point br_bf = bestFit.br();
-					Point tl_cb = currentBox.tl();
-					Point br_cb = currentBox.br();
-					if (tl_bf.x < tl_cb.x) {
-						tl.x = tl_bf.x;
-					}
-					if (tl_bf.y < tl_cb.y) {
-						tl.y = tl_bf.y;
-					}
-					if (br.x < recList.get(i).br().x) {
-						br.x = recList.get(i).br().x;
-					}
-					if (br.y < recList.get(i).br().y) {
-						br.y = recList.get(i).br().y;
-					}
-					tl.x = Math.min(tl_bf.x, tl_cb.x);
-					tl.y = Math.min(tl_bf.y, tl_cb.y);
-					br.x = Math.max(br_bf.x, br_cb.x);
-					br.y = Math.max(br_bf.y, br_cb.y);
-					Imgproc.rectangle(src, tl, br, new Scalar(255, 255, 0));
-					Imgproc.circle(src, new Point((tl.x + br.x) / 2,
-							(tl.y + br.y) / 2), 5, new Scalar(0, 0, 255));
-					towers.add(new Point((tl.x + br.x) / 2, (tl.y + br.y) / 2));
-					} else {
-						Imgproc.putText(src, "Error: check logs", new Point(resolution[0]/2, resolution[1]/2),
-								Core.FONT_HERSHEY_TRIPLEX, 1, new Scalar(0, 0, 255));
-					}
-				}
-
-				Rect bb = new Rect(tl, br);
-				if (!debug) {
-					try {
-						outputTable.putBoolean("foundTower", true);
-					} catch (Exception e) {
-
-					}
-				}
-				Point closestPoint = new Point(999999, 999999);
-				// this should be the center point of the image
-				Point center = new Point(resolution[0]/2, resolution[1]/2);
-				for(Point p : towers) {
-					double closestToCenter = Math.abs(closestPoint.x - center.x);
-					double towerToCenter = Math.abs(p.x - center.x);
-					if(towerToCenter < closestToCenter) {
-						closestPoint = p;
-					}
-				}
-				double distanceFromCenter = center.x - closestPoint.x;
-				if (!debug) {
-					try {
-						outputTable.putNumber("towerOffset", distanceFromCenter);
-					} catch (Exception ae) {
-						
-					}
-				}
-				return src;
-			} catch (Exception e) {
-				// lol there's no logs
-				Imgproc.putText(src, "Error: check logs", new Point(50, 100),
-						Core.FONT_HERSHEY_PLAIN, 1, new Scalar(0, 0, 255));
-				System.out.print(e);
-				if (!debug) {
-					try {
-						outputTable.putBoolean("f", false);
-					} catch (Exception ae) {
-
-					}
-				}
-			}			
 			return src;
 		}
 	}
+
+			// ugliest code 2k16
+			// for real though i think the purpose of this is to figure out how to draw a box
+			// like seriously how many lines of code is this to draw a box
+//			try {
+//				Point tl = recList.get(0).tl();
+//				Point br = recList.get(0).br();
+//				int[] x = new int[recList.size()], y = new int[recList.size()];
+//				ArrayList<Rect> boxes = new ArrayList<Rect>();
+//				for (int i = 0; i < recList.size(); i++) {
+//					tl = recList.get(i).tl();
+//					br = recList.get(i).br();
+//					if (new Rect(tl, br).height > FOXACIDCONFIGURE.getMinHeight()) {
+//						boxes.add(new Rect(tl, br));
+//					}
+//
+//				}
+//				Rect currentBox = new Rect(), bestFit = new Rect();
+//				for (int i = 0; i < boxes.size(); i++) {
+//					currentBox = boxes.get(i);
+//					double bestDistance = Double.MAX_VALUE;
+//					bestFit = null;
+//					for (Rect r : boxes) {
+//						if (currentBox == r) {
+//
+//						} else {
+//							Point currentBoxCent, loopBoxCent;
+//							currentBoxCent = new Point(
+//									(currentBox.tl().x + currentBox.br().x) / 2,
+//									(currentBox.tl().y + currentBox.br().y) / 2);
+//							loopBoxCent = new Point((r.tl().x + r.br().x) / 2,
+//									(r.tl().y + r.br().y) / 2);
+//							double currToLoopDistance = Math.sqrt(Math.pow(
+//									Math.abs(loopBoxCent.x - currentBoxCent.x),
+//									2)
+//									+ Math.pow(
+//											Math.abs(loopBoxCent.y
+//													- currentBoxCent.y), 2));
+//							if ((currToLoopDistance < bestDistance)) {
+//								bestFit = r;
+//								bestDistance = currToLoopDistance;
+//							}
+//
+//						}
+//					}
+//					if(bestFit != null) {
+//					Point tl_bf = bestFit.tl();
+//					Point br_bf = bestFit.br();
+//					Point tl_cb = currentBox.tl();
+//					Point br_cb = currentBox.br();
+//					if (tl_bf.x < tl_cb.x) {
+//						tl.x = tl_bf.x;
+//					}
+//					if (tl_bf.y < tl_cb.y) {
+//						tl.y = tl_bf.y;
+//					}
+//					if (br.x < recList.get(i).br().x) {
+//						br.x = recList.get(i).br().x;
+//					}
+//					if (br.y < recList.get(i).br().y) {
+//						br.y = recList.get(i).br().y;
+//					}
+//					tl.x = Math.min(tl_bf.x, tl_cb.x);
+//					tl.y = Math.min(tl_bf.y, tl_cb.y);
+//					br.x = Math.max(br_bf.x, br_cb.x);
+//					br.y = Math.max(br_bf.y, br_cb.y);
+//					Imgproc.rectangle(src, tl, br, new Scalar(255, 255, 0));
+//					Imgproc.circle(src, new Point((tl.x + br.x) / 2,
+//							(tl.y + br.y) / 2), 5, new Scalar(0, 0, 255));
+//					towers.add(new Point((tl.x + br.x) / 2, (tl.y + br.y) / 2));
+//					} else {
+//						Imgproc.putText(src, "Error: check logs", new Point(resolution[0]/2, resolution[1]/2),
+//								Core.FONT_HERSHEY_TRIPLEX, 1, new Scalar(0, 0, 255));
+//					}
+//				}
+//
+//				Rect bb = new Rect(tl, br);
+//				if (!debug) {
+//					try {
+//						outputTable.putBoolean("foundTower", true);
+//					} catch (Exception e) {
+//
+//					}
+//				}
+//				Point closestPoint = new Point(999999, 999999);
+//				// this should be the center point of the image
+//				Point center = new Point(resolution[0]/2, resolution[1]/2);
+//				for(Point p : towers) {
+//					double closestToCenter = Math.abs(closestPoint.x - center.x);
+//					double towerToCenter = Math.abs(p.x - center.x);
+//					if(towerToCenter < closestToCenter) {
+//						closestPoint = p;
+//					}
+//				}
+//				double distanceFromCenter = center.x - closestPoint.x;
+//				if (!debug) {
+//					try {
+//						outputTable.putNumber("towerOffset", distanceFromCenter);
+//					} catch (Exception ae) {
+//						
+//					}
+//				}
+//				return src;
+//			} catch (Exception e) {
+//				// lol there's no logs
+//				Imgproc.putText(src, "Error: check logs", new Point(50, 100),
+//						Core.FONT_HERSHEY_PLAIN, 1, new Scalar(0, 0, 255));
+//				System.out.print(e);
+//				if (!debug) {
+//					try {
+//						outputTable.putBoolean("f", false);
+//					} catch (Exception ae) {
+//
+//					}
+//				}
+//			}			
+
 
 	private BGThread bgThread = new BGThread();
 	private final int team = DashboardPrefs.getInstance().team.getValue()
@@ -384,8 +551,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 
 			g.setColor(Color.PINK);
 			g.drawString("FPS: " + this.lastFPS, 10, 10);
-			System.out.println("Width: " + width);
-			System.out.println("Height: " + height);
 		} else {
 			g.setColor(Color.PINK);
 			g.fillRect(0, 0, getBounds().width, getBounds().height);

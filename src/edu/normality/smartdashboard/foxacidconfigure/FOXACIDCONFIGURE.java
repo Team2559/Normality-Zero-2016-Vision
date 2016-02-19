@@ -26,8 +26,10 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 							kMaxHue = 100,
 							kMaxSat = 255,
 							kMaxVal = 255,
-							kMinHeight = 50,
-							kMinWidth = 50;
+							kMinHeight = 30,
+							kMinWidth = 45,
+							kMinAspect = 275,
+							kMaxAspect = 1000;
 
 	public static JSlider minHueSlider;
 
@@ -45,6 +47,10 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	
 	public static JSlider minWidthSlider;
 	
+	public static JSlider minAspectSlider;
+	
+	public static JSlider maxAspectSlider;
+	
 	public static  JLabel minHueLabel = new JLabel("minHue");
 	public static  JLabel minSatLabel = new JLabel("minSat");
 	public static  JLabel minValLabel = new JLabel("minVal");
@@ -53,6 +59,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	public static  JLabel maxValLabel = new JLabel("maxVal");
 	public static  JLabel minHeightLabel = new JLabel("minHeight");
 	public static  JLabel minWidthLabel = new JLabel("minWidth");
+	public static  JLabel minAspectLabel = new JLabel("minAspect");
+	public static  JLabel maxAspectLabel = new JLabel("maxAspect");
 	
 	JPanel sliders;	
 	
@@ -69,6 +77,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 				maxSatSlider.setValue(kMaxSat);
 				minHeightSlider.setValue(kMinHeight);
 				minWidthSlider.setValue(kMinWidth);
+				minAspectSlider.setValue(kMinAspect);
+				maxAspectSlider.setValue(kMaxAspect);
 			}
 		});
 		sliders.setLayout(new BoxLayout(sliders, BoxLayout.Y_AXIS));
@@ -83,6 +93,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		maxValSlider = new JSlider(JSlider.HORIZONTAL, 0, 255, kMaxVal);
 		minHeightSlider = new JSlider(JSlider.HORIZONTAL, 0, 500, kMinHeight);
 		minWidthSlider = new JSlider(JSlider.HORIZONTAL, 0, 500, kMinWidth);
+		minAspectSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, kMinAspect);
+		maxAspectSlider = new JSlider(JSlider.HORIZONTAL, 0, 1000, kMaxAspect);
 		sliders.setPreferredSize(new Dimension(200, 640));
 		
 		minHueSlider.addChangeListener(new ChangeListener() {			
@@ -132,6 +144,18 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 				FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
 			}
 		});
+
+		minAspectSlider.addChangeListener(new ChangeListener() {			
+			public void stateChanged(ChangeEvent e) {
+				FOXACIDCONFIGURE.minAspectLabel.setText("minAspect: " + (double)FOXACIDCONFIGURE.minAspectSlider.getValue() / 500d);
+			}
+		});
+		
+		maxAspectSlider.addChangeListener(new ChangeListener() {			
+			public void stateChanged(ChangeEvent e) {
+				FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 500d);
+			}
+		});
 		
 		FOXACIDCONFIGURE.minHueLabel.setText("minHue: " + FOXACIDCONFIGURE.minHueSlider.getValue());
 		FOXACIDCONFIGURE.maxHueLabel.setText("maxHue: " + FOXACIDCONFIGURE.maxHueSlider.getValue());
@@ -141,6 +165,8 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		FOXACIDCONFIGURE.maxValLabel.setText("maxVal: " + FOXACIDCONFIGURE.maxValSlider.getValue());
 		FOXACIDCONFIGURE.minHeightLabel.setText("minHeight: " + FOXACIDCONFIGURE.minHeightSlider.getValue());
 		FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
+		FOXACIDCONFIGURE.minAspectLabel.setText("minAspect: " + (double)FOXACIDCONFIGURE.minAspectSlider.getValue() / 500d);
+		FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 500d);
 		
 		sliders.add(jB);
 		sliders.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -162,6 +188,11 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		sliders.add(minHeightSlider);
 		sliders.add(minWidthLabel);
 		sliders.add(minWidthSlider);
+		sliders.add(minAspectLabel);
+		sliders.add(minAspectSlider);
+		sliders.add(maxAspectLabel);
+		sliders.add(maxAspectSlider);
+		
 		
 		add(sliders);
 	}
@@ -202,6 +233,14 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	
 	public static int getMinWidth() {
 		return minWidthSlider.getValue();
+	}
+	
+	public static double getMinAspect() {
+		return (double)minAspectSlider.getValue() / 500d;
+	}
+	
+	public static double getMaxAspect() {
+		return (double)maxAspectSlider.getValue() / 500d;
 	}
 	
 }

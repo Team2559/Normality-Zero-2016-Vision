@@ -153,7 +153,7 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		
 		maxAspectSlider.addChangeListener(new ChangeListener() {			
 			public void stateChanged(ChangeEvent e) {
-				FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 500d);
+				FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 200d);
 			}
 		});
 		
@@ -166,7 +166,7 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 		FOXACIDCONFIGURE.minHeightLabel.setText("minHeight: " + FOXACIDCONFIGURE.minHeightSlider.getValue());
 		FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
 		FOXACIDCONFIGURE.minAspectLabel.setText("minAspect: " + (double)FOXACIDCONFIGURE.minAspectSlider.getValue() / 500d);
-		FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 500d);
+		FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 200d);
 		
 		sliders.add(jB);
 		sliders.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -240,7 +240,7 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	}
 	
 	public static double getMaxAspect() {
-		return (double)maxAspectSlider.getValue() / 500d;
+		return (double)maxAspectSlider.getValue() / 200d;
 	}
 	
 }

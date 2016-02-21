@@ -154,7 +154,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 		FOXACIDCONFIGURE.minHeightLabel.setText("minHeight: " + FOXACIDCONFIGURE.minHeightSlider.getValue());
 		FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
 		FOXACIDCONFIGURE.minAspectLabel.setText("minAspect: " + (double)FOXACIDCONFIGURE.minAspectSlider.getValue() / 500d);
-		FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 500d);
+		FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double)FOXACIDCONFIGURE.maxAspectSlider.getValue() / 200d);
 		
 		Mat hsv = new Mat(), thresh = new Mat(), heirarchy = new Mat();
 		Scalar lowerBound = new Scalar(FOXACIDCONFIGURE.getMinHue(),

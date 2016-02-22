@@ -22,7 +22,7 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	
 	public static final int kMinHue = 50,
 							kMinSat = 120,
-							kMinVal = 100,
+							kMinVal = 35,
 							kMaxHue = 100,
 							kMaxSat = 255,
 							kMaxVal = 255,

@@ -39,7 +39,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 	private int fpsCounter = 3;
 	private BufferedImage imageToDraw;
 
-	public static final double kMorphKernelSize = 1.8;
+	public static final double kMorphKernelSize = 1;
 	public static final int kMinHue = 50;
 	public static final int kMinSat = 120;
 	public static final int kMinVal = 100;
@@ -143,6 +143,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 	}
 
 	private Mat findTower(Mat src) {
+		boolean[] badApples;
 		ArrayList<Point> towers = new ArrayList<Point>();
 		double startTime = System.currentTimeMillis();
 		FOXACIDCONFIGURE.minHueLabel.setText("minHue: " + FOXACIDCONFIGURE.minHueSlider.getValue());
@@ -179,6 +180,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 				Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 		
 		System.out.println("Contours size before: " + contours.size());
+		badApples = new boolean[contours.size()];
 		for (int dre = 0; dre < contours.size(); dre++) {
 			Rect tempRec = Imgproc.boundingRect(contours.get(dre));
 			int width = tempRec.width, height = tempRec.height;
@@ -187,7 +189,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 			boolean shouldRemove = false;			
 			if (width <= FOXACIDCONFIGURE.getMinWidth()) {
 				shouldRemove = true;
-			}			
+			}
 			if (height <= FOXACIDCONFIGURE.getMinHeight()) {
 				shouldRemove = true;
 			}			
@@ -199,7 +201,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 			}
 			
 			if (shouldRemove) {
-				contours.remove(dre);
+				badApples[dre] = true;
 			}
 		}		
 		System.out.println("Contours size after: " + contours.size());
@@ -217,44 +219,13 @@ public class FOXACID extends VideoStreamViewerExtension {
 		
 		// only one object found
 		if (contours.size() == 1) {
-			// draw a box around it
 			Rect rec1 = Imgproc.boundingRect(contours.get(0));
 			
 			int width = rec1.width;
 			int height = rec1.height;
 			double aspect = (double)width /height;
-			boolean shouldRemove = false;
 			
-			if (width <= FOXACIDCONFIGURE.getMinWidth()) {
-				shouldRemove = true;
-				System.out.println("-------");
-				System.out.println("Failed width validation!");
-				System.out.println("Current Width (" + width + ") is less than " + FOXACIDCONFIGURE.getMinWidth());
-				System.out.println("-------");
-			}			
-			if (height <= FOXACIDCONFIGURE.getMinHeight()) {
-				shouldRemove = true;
-				System.out.println("-------");
-				System.out.println("Failed height validation!");
-				System.out.println("Current Height (" + height + ") is less than " + FOXACIDCONFIGURE.getMinHeight());
-				System.out.println("-------");
-			}			
-			if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
-				shouldRemove = true;
-				System.out.println("-------");
-				System.out.println("Failed aspect minimum validation!");
-				System.out.println("Current Aspect (" + aspect + ") is less than 1.");
-				System.out.println("-------");
-			}			
-			if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
-				shouldRemove = true;
-				System.out.println("-------");
-				System.out.println("Failed aspect maximum validation!");
-				System.out.println("Current Aspect (" + aspect + ") is greater than 2.5.");
-				System.out.println("-------");
-			}
-			
-			if (shouldRemove) {
+			if (badApples[0]) {
 				try {
 					outputTable.putBoolean("foundTower", false);
 				} catch (Exception e) {
@@ -310,76 +281,40 @@ public class FOXACID extends VideoStreamViewerExtension {
 				int width = rec1.width;
 				int height = rec1.height;
 				double aspect = (double)width /height;
-				boolean shouldRemove = false;
 				
-				if (width <= FOXACIDCONFIGURE.getMinWidth()) {
-					shouldRemove = true;
-					System.out.println("-------");
-					System.out.println("Failed width validation!");
-					System.out.println("Current Width (" + width + ") is less than " + FOXACIDCONFIGURE.getMinWidth());
-					System.out.println("-------");
-				}			
-				if (height <= FOXACIDCONFIGURE.getMinHeight()) {
-					shouldRemove = true;
-					System.out.println("-------");
-					System.out.println("Failed height validation!");
-					System.out.println("Current Height (" + height + ") is less than " + FOXACIDCONFIGURE.getMinHeight());
-					System.out.println("-------");
-				}			
-				if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
-					shouldRemove = true;
-					System.out.println("-------");
-					System.out.println("Failed aspect minimum validation!");
-					System.out.println("Current Aspect (" + aspect + ") is less than 1.");
-					System.out.println("-------");
-				}			
-				if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
-					shouldRemove = true;
-					System.out.println("-------");
-					System.out.println("Failed aspect maximum validation!");
-					System.out.println("Current Aspect (" + aspect + ") is greater than 2.5.");
-					System.out.println("-------");
-				}
-				
-				if (shouldRemove) {
-//					try {
-//						outputTable.putBoolean("foundTower", false);
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-					return src;
-				}
-				
-//				Point centerPoint = new Point((rec1.tl().x + rec1.br().x) / 2,
-//						(rec1.tl().y + rec1.br().y) / 2);
-//				
-//				Point imageCenter = new Point(resolution[0]/2, resolution[1]/2);
-//				double xOffset = imageCenter.x - centerPoint.x;
-//				double yOffset = imageCenter.y - centerPoint.y;
-//				
-//				try {
-//					outputTable.putBoolean("foundTower", true);
-//					outputTable.putNumber("towerXOffset", xOffset);
-//					outputTable.putNumber("towerYOffset", yOffset);
-//					
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//				
-				Point tempCenter = new Point((rec1.tl().x + rec1.br().x) / 2,
-						(rec1.tl().y + rec1.br().y) / 2);
-				Imgproc.rectangle(src, rec1.tl(), rec1.br(),
-						new Scalar(255, 255, 0));
-				Imgproc.circle(src, tempCenter, 5, new Scalar(0, 0, 255));
-				String xString = "X: " + (rec1.tl().x + rec1.br().x)
-					/ 2;
-				String yString = "Y:" + (rec1.tl().y + rec1.br().y) / 2;
-				Point center = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 50);
-				Point centerHigher = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 30);
-
-				Imgproc.putText(src, xString, centerHigher, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
-				Imgproc.putText(src, yString, center, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
-				
+				if (badApples[i]) {
+					
+				} else {				
+					Point centerPoint = new Point((rec1.tl().x + rec1.br().x) / 2,
+							(rec1.tl().y + rec1.br().y) / 2);
+					
+					Point imageCenter = new Point(resolution[0]/2, resolution[1]/2);
+					double xOffset = imageCenter.x - centerPoint.x;
+					double yOffset = imageCenter.y - centerPoint.y;
+					
+					try {
+						outputTable.putBoolean("foundTower", true);
+						outputTable.putNumber("towerXOffset", xOffset);
+						outputTable.putNumber("towerYOffset", yOffset);
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					Point tempCenter = new Point((rec1.tl().x + rec1.br().x) / 2,
+							(rec1.tl().y + rec1.br().y) / 2);
+					Imgproc.rectangle(src, rec1.tl(), rec1.br(),
+							new Scalar(255, 255, 0));
+					Imgproc.circle(src, tempCenter, 5, new Scalar(0, 0, 255));
+					String xString = "X: " + (rec1.tl().x + rec1.br().x)
+						/ 2;
+					String yString = "Y:" + (rec1.tl().y + rec1.br().y) / 2;
+					Point center = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 50);
+					Point centerHigher = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 30);
+	
+					Imgproc.putText(src, xString, centerHigher, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
+					Imgproc.putText(src, yString, center, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
+					}
 			}
 			return src;
 		}

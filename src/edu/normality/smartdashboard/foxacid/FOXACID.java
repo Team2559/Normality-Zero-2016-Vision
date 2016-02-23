@@ -48,6 +48,20 @@ public class FOXACID extends VideoStreamViewerExtension {
 	public static final int kMaxSat = 255;
 	public static final int kMaxVal = 255;
 	
+//	Constants for known variables
+//	the height to the top of the target in first stronghold is 97 inches	
+	public static final int kTopTargetHeight = 97;
+//	the physical height of the camera lens
+	public static final int kTopCameraHeight = 32;
+	
+//	camera details, can usually be found on the datasheets of the camera
+	public static final double kVerticalFOV  = 34;
+	public static final double kHorizontalFOV  = 61;
+	public static final double kCameraAngle = 10;
+	
+	// shooter offset
+	public static final double kShooterOffsetDeg = 0;
+	
 	public static final int[] resolution = {640, 360};
 	
 	public static final boolean debug = false;
@@ -245,8 +259,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 			try {
 				outputTable.putBoolean("foundTower", true);
 				outputTable.putNumber("towerXOffset", xOffset);
-				outputTable.putNumber("towerYOffset", yOffset);
-				
+				outputTable.putNumber("towerYOffset", yOffset);				
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -269,7 +282,21 @@ public class FOXACID extends VideoStreamViewerExtension {
 			String yString = "Y:" + (rec1.tl().y + rec1.br().y) / 2;
 			Point center = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 50);
 			Point centerHigher = new Point(rec1.br().x-rec1.width / 2 - 15, (rec1.br().y - rec1.height / 2) - 30);
+			
+			double distanceCenterX = (rec1.tl().x + rec1.br().x) / 2;
+			distanceCenterX = (2 * (distanceCenterX / src.width())) - 1;
+			double distanceCenterY = (rec1.tl().y + rec1.br().y) / 2;
+			distanceCenterY = -((2 * (distanceCenterY / src.height())) - 1);
+			
+			//double azimuth = this.boundAngle0to360Degrees(distanceCenterX * kHorizontalFOV/2.0 + heading - kShooterOffsetDeg);
+            double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle)*Math.PI/180.0);
 
+            try {
+				outputTable.putNumber("distanceFromTarget", range);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+            
 			Imgproc.putText(src, xString, center, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
 			Imgproc.putText(src, yString, centerHigher, Core.FONT_HERSHEY_PLAIN, 1, new Scalar(255, 255, 0));
 			return src;
@@ -318,123 +345,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 			}
 			return src;
 		}
-	}
-
-			// ugliest code 2k16
-			// for real though i think the purpose of this is to figure out how to draw a box
-			// like seriously how many lines of code is this to draw a box
-//			try {
-//				Point tl = recList.get(0).tl();
-//				Point br = recList.get(0).br();
-//				int[] x = new int[recList.size()], y = new int[recList.size()];
-//				ArrayList<Rect> boxes = new ArrayList<Rect>();
-//				for (int i = 0; i < recList.size(); i++) {
-//					tl = recList.get(i).tl();
-//					br = recList.get(i).br();
-//					if (new Rect(tl, br).height > FOXACIDCONFIGURE.getMinHeight()) {
-//						boxes.add(new Rect(tl, br));
-//					}
-//
-//				}
-//				Rect currentBox = new Rect(), bestFit = new Rect();
-//				for (int i = 0; i < boxes.size(); i++) {
-//					currentBox = boxes.get(i);
-//					double bestDistance = Double.MAX_VALUE;
-//					bestFit = null;
-//					for (Rect r : boxes) {
-//						if (currentBox == r) {
-//
-//						} else {
-//							Point currentBoxCent, loopBoxCent;
-//							currentBoxCent = new Point(
-//									(currentBox.tl().x + currentBox.br().x) / 2,
-//									(currentBox.tl().y + currentBox.br().y) / 2);
-//							loopBoxCent = new Point((r.tl().x + r.br().x) / 2,
-//									(r.tl().y + r.br().y) / 2);
-//							double currToLoopDistance = Math.sqrt(Math.pow(
-//									Math.abs(loopBoxCent.x - currentBoxCent.x),
-//									2)
-//									+ Math.pow(
-//											Math.abs(loopBoxCent.y
-//													- currentBoxCent.y), 2));
-//							if ((currToLoopDistance < bestDistance)) {
-//								bestFit = r;
-//								bestDistance = currToLoopDistance;
-//							}
-//
-//						}
-//					}
-//					if(bestFit != null) {
-//					Point tl_bf = bestFit.tl();
-//					Point br_bf = bestFit.br();
-//					Point tl_cb = currentBox.tl();
-//					Point br_cb = currentBox.br();
-//					if (tl_bf.x < tl_cb.x) {
-//						tl.x = tl_bf.x;
-//					}
-//					if (tl_bf.y < tl_cb.y) {
-//						tl.y = tl_bf.y;
-//					}
-//					if (br.x < recList.get(i).br().x) {
-//						br.x = recList.get(i).br().x;
-//					}
-//					if (br.y < recList.get(i).br().y) {
-//						br.y = recList.get(i).br().y;
-//					}
-//					tl.x = Math.min(tl_bf.x, tl_cb.x);
-//					tl.y = Math.min(tl_bf.y, tl_cb.y);
-//					br.x = Math.max(br_bf.x, br_cb.x);
-//					br.y = Math.max(br_bf.y, br_cb.y);
-//					Imgproc.rectangle(src, tl, br, new Scalar(255, 255, 0));
-//					Imgproc.circle(src, new Point((tl.x + br.x) / 2,
-//							(tl.y + br.y) / 2), 5, new Scalar(0, 0, 255));
-//					towers.add(new Point((tl.x + br.x) / 2, (tl.y + br.y) / 2));
-//					} else {
-//						Imgproc.putText(src, "Error: check logs", new Point(resolution[0]/2, resolution[1]/2),
-//								Core.FONT_HERSHEY_TRIPLEX, 1, new Scalar(0, 0, 255));
-//					}
-//				}
-//
-//				Rect bb = new Rect(tl, br);
-//				if (!debug) {
-//					try {
-//						outputTable.putBoolean("foundTower", true);
-//					} catch (Exception e) {
-//
-//					}
-//				}
-//				Point closestPoint = new Point(999999, 999999);
-//				// this should be the center point of the image
-//				Point center = new Point(resolution[0]/2, resolution[1]/2);
-//				for(Point p : towers) {
-//					double closestToCenter = Math.abs(closestPoint.x - center.x);
-//					double towerToCenter = Math.abs(p.x - center.x);
-//					if(towerToCenter < closestToCenter) {
-//						closestPoint = p;
-//					}
-//				}
-//				double distanceFromCenter = center.x - closestPoint.x;
-//				if (!debug) {
-//					try {
-//						outputTable.putNumber("towerOffset", distanceFromCenter);
-//					} catch (Exception ae) {
-//						
-//					}
-//				}
-//				return src;
-//			} catch (Exception e) {
-//				// lol there's no logs
-//				Imgproc.putText(src, "Error: check logs", new Point(50, 100),
-//						Core.FONT_HERSHEY_PLAIN, 1, new Scalar(0, 0, 255));
-//				System.out.print(e);
-//				if (!debug) {
-//					try {
-//						outputTable.putBoolean("f", false);
-//					} catch (Exception ae) {
-//
-//					}
-//				}
-//			}			
+	}		
 
 
 	private BGThread bgThread = new BGThread();
@@ -448,6 +359,19 @@ public class FOXACID extends VideoStreamViewerExtension {
 					DashboardPrefs.getInstance().team.getValue().intValue() / 100,
 					DashboardPrefs.getInstance().team.getValue().intValue() % 100,
 					11 });
+	
+    public double boundAngle0to360Degrees(double angle)
+    {
+        while(angle >= 360.0)
+        {
+            angle -= 360.0;
+        }
+        while(angle < 0.0)
+        {
+            angle += 360.0;
+        }
+        return angle;
+    }
 
 	public void init() {
 		setPreferredSize(new Dimension(resolution[0], resolution[1]));

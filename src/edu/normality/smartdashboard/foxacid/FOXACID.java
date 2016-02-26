@@ -60,11 +60,14 @@ public class FOXACID extends VideoStreamViewerExtension {
 	public static final double kCameraAngle = 10;
 	
 	// shooter offset
-	public static final double kShooterOffsetDeg = 0;
+	public static final double 	kShooterOffsetDegX = 0,
+								kShooterOffsetDegY = 0;
 	
 	public static final int[] resolution = {640, 360};
 	
 	public static final boolean debug = false;
+	
+	public double heading, angleOfShooter;
 	
 	ITable outputTable;
 
@@ -231,6 +234,14 @@ public class FOXACID extends VideoStreamViewerExtension {
 			}
 		}
 		
+		try {
+			heading = outputTable.getNumber("heading", 0);
+			angleOfShooter = outputTable.getNumber("angleOfShooter", 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
 		// only one object found
 		if (contours.size() == 1) {
 			Rect rec1 = Imgproc.boundingRect(contours.get(0));
@@ -259,7 +270,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 			try {
 				outputTable.putBoolean("foundTower", true);
 				outputTable.putNumber("towerXOffset", xOffset);
-				outputTable.putNumber("towerYOffset", yOffset);				
+				outputTable.putNumber("towerYOffset", yOffset);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -288,11 +299,14 @@ public class FOXACID extends VideoStreamViewerExtension {
 			double distanceCenterY = (rec1.tl().y + rec1.br().y) / 2;
 			distanceCenterY = -((2 * (distanceCenterY / src.height())) - 1);
 			
-			//double azimuth = this.boundAngle0to360Degrees(distanceCenterX * kHorizontalFOV/2.0 + heading - kShooterOffsetDeg);
+			double azimuth = this.boundAngle0to360Degrees(distanceCenterX * kHorizontalFOV/2.0 + heading - kShooterOffsetDegX);
+			double altitude = this.boundAngle0to360Degrees(distanceCenterY * kVerticalFOV/2.0 + angleOfShooter - kShooterOffsetDegY);
             double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle)*Math.PI/180.0);
 
             try {
 				outputTable.putNumber("distanceFromTarget", range);
+				outputTable.putNumber("azimuth", azimuth);
+				outputTable.putNumber("altitude", altitude);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -324,6 +338,23 @@ public class FOXACID extends VideoStreamViewerExtension {
 						outputTable.putNumber("towerXOffset", xOffset);
 						outputTable.putNumber("towerYOffset", yOffset);
 						
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					
+					double distanceCenterX = (rec1.tl().x + rec1.br().x) / 2;
+					distanceCenterX = (2 * (distanceCenterX / src.width())) - 1;
+					double distanceCenterY = (rec1.tl().y + rec1.br().y) / 2;
+					distanceCenterY = -((2 * (distanceCenterY / src.height())) - 1);
+					
+					double azimuth = this.boundAngle0to360Degrees(distanceCenterX * kHorizontalFOV/2.0 + heading - kShooterOffsetDegX);
+					double altitude = this.boundAngle0to360Degrees(distanceCenterY * kVerticalFOV/2.0 + angleOfShooter - kShooterOffsetDegY);
+		            double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle)*Math.PI/180.0);
+
+		            try {
+						outputTable.putNumber("distanceFromTarget", range);
+						outputTable.putNumber("azimuth", azimuth);
+						outputTable.putNumber("altitude", altitude);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

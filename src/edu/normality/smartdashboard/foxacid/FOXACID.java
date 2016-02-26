@@ -129,8 +129,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 			FOXACID.this.imageToDraw = image;
 			original.release();
 			processed.release();
-			// System.out.println("Successfully drawn image: "
-			// + img.getWidth() + " x " + img.getHeight());
 			this.lastRepaint = System.currentTimeMillis();
 			FOXACID.this.repaint();
 		    }
@@ -156,7 +154,6 @@ public class FOXACID extends VideoStreamViewerExtension {
     private Mat findTower(Mat src) {
 	boolean[] badApples;
 	Rect bestTarget = new Rect();
-	ArrayList<Point> towers = new ArrayList<Point>();
 	double startTime = System.currentTimeMillis();
 	FOXACIDCONFIGURE.minHueLabel.setText("minHue: " + FOXACIDCONFIGURE.minHueSlider.getValue());
 	FOXACIDCONFIGURE.maxHueLabel.setText("maxHue: " + FOXACIDCONFIGURE.maxHueSlider.getValue());

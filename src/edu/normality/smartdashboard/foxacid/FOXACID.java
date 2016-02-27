@@ -56,7 +56,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     // camera details, can usually be found on the datasheets of the camera
     public static final double	kVerticalFOV	   = 33.6;
     public static final double	kHorizontalFOV	   = 59.7;
-    public static final double	kCameraAngle	   = 32.64;
+    public static final double	kCameraAngle	   = 28; //32.64
 
     // shooter offset
     public static final double	kShooterOffsetDegX = 0,

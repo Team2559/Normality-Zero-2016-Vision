@@ -20,7 +20,7 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 	
 	public static final String NAME = "FOXACID - Configurer";
 	
-	public static final int kMinHue = 50,
+	public static final int kMinHue = 45,
 							kMinSat = 120,
 							kMinVal = 35,
 							kMaxHue = 100,

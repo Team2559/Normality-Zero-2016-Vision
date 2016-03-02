@@ -77,7 +77,9 @@ public class FOXACID extends VideoStreamViewerExtension {
     static Mat			src, dest, image;
 
     static {
-	System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+	//System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+	String libPath = System.getProperty("java.library.path");
+	System.load("C:\\opencv_3\\build\\java\\x64\\" + Core.NATIVE_LIBRARY_NAME + ".dll");
 	NetworkTable.setClientMode();
     }
 

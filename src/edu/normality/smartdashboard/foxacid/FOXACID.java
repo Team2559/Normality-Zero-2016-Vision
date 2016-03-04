@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -59,8 +60,10 @@ public class FOXACID extends VideoStreamViewerExtension {
     public static final double	kCameraAngle	   = 28;			     // 32.64
 
     // shooter offset
-    public static final double	kShooterOffsetDegX = 0,
-					kShooterOffsetDegY = 80;
+    public static final double	kShooterOffsetDegX = 5,
+					kShooterOffsetDegY = 80,
+					kAngleOffset = 0;
+    
 
     public static final int[]	resolution	   = { 640, 360 };
 
@@ -71,6 +74,9 @@ public class FOXACID extends VideoStreamViewerExtension {
 
     public double		heading		   = 0,
 					angleOfShooter = 0;
+    
+    private TreeMap<Double, Double> angleTable;
+
 
     ITable			outputTable;
 
@@ -86,6 +92,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     public static void main(String[] args) {
 	return;
     }
+    
 
     public class BGThread extends Thread {
 
@@ -223,6 +230,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 		outputTable.putNumber("distanceFromTarget", 0);
 		outputTable.putNumber("azimuth", 0);
 		outputTable.putNumber("altitude", 0);
+		outputTable.putNumber("angle", 0);
 		return src;
 	    } catch (Exception e) {
 		e.printStackTrace();
@@ -242,6 +250,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 		    outputTable.putNumber("distanceFromTarget", 0);
 		    outputTable.putNumber("azimuth", 0);
 		    outputTable.putNumber("altitude", 0);
+		    outputTable.putNumber("angle", 0);
 		    return src;
 		} catch (Exception e) {
 		    e.printStackTrace();
@@ -311,11 +320,13 @@ public class FOXACID extends VideoStreamViewerExtension {
 	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + heading + kShooterOffsetDegX;
 	double altitude = distanceCenterY * kVerticalFOV / 2.0 + angleOfShooter + kShooterOffsetDegY;
 	double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle) * Math.PI / 180.0);
+	double angle = getAngleForRange(range);
 
 	try {
 	    outputTable.putNumber("distanceFromTarget", range);
 	    outputTable.putNumber("azimuth", azimuth);
 	    outputTable.putNumber("altitude", altitude);
+	    outputTable.putNumber("angle", angle);
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
@@ -331,6 +342,30 @@ public class FOXACID extends VideoStreamViewerExtension {
     public final IPAddressProperty ipProperty = new IPAddressProperty(this, "Camera IP Address",
 	    new int[] { 10, DashboardPrefs.getInstance().team.getValue().intValue() / 100, DashboardPrefs.getInstance().team.getValue().intValue() % 100, 11 });
 
+    public double getAngleForRange(double range)
+    {
+        double lowKey = -1.0;
+        double lowVal = -1.0;
+        for( double key : angleTable.keySet() )
+        {
+            if( range < key )
+            {
+                double highVal = angleTable.get(key);
+                if( lowKey > 0.0 )
+                {
+                    double m = (range-lowKey)/(key-lowKey);
+                    return lowVal+m*(highVal-lowVal);
+                }
+                else
+                    return highVal;
+            }
+            lowKey = key;
+            lowVal = angleTable.get(key);
+        }
+
+        return 5234.0+kShooterOffsetDegY;
+    }
+    
     public double boundAngle0to360Degrees(double angle) {
 	while (angle >= 360.0) {
 	    angle -= 360.0;
@@ -343,6 +378,24 @@ public class FOXACID extends VideoStreamViewerExtension {
 
     public void init() {
 	setPreferredSize(new Dimension(resolution[0], resolution[1]));
+	angleTable = new TreeMap<Double,Double>();
+        //rangeTable.put(110.0, 3800.0+kAngleOffset);
+        //rangeTable.put(120.0, 3900.0+kAngleOffset);
+        //rangeTable.put(130.0, 4000.0+kAngleOffset);
+        angleTable.put(140.0, 3434.0+kAngleOffset);
+        angleTable.put(150.0, 3499.0+kAngleOffset);
+        angleTable.put(160.0, 3544.0+kAngleOffset);
+        angleTable.put(170.0, 3574.0+kAngleOffset);
+        angleTable.put(180.0, 3609.0+kAngleOffset);
+        angleTable.put(190.0, 3664.0+kAngleOffset);
+        angleTable.put(200.0, 3854.0+kAngleOffset);
+        angleTable.put(210.0, 4034.0+kAngleOffset);
+        angleTable.put(220.0, 4284.0+kAngleOffset);
+        angleTable.put(230.0, 4434.0+kAngleOffset);
+        angleTable.put(240.0, 4584.0+kAngleOffset);
+        angleTable.put(250.0, 4794.0+kAngleOffset);
+        angleTable.put(260.0, 5034.0+kAngleOffset);
+        angleTable.put(270.0, 5234.0+kAngleOffset);
 	this.ipString = this.ipProperty.getSaveValue();
 	this.bgThread.start();
 	revalidate();

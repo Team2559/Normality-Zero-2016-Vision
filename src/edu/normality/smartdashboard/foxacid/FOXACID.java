@@ -60,7 +60,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 
     // shooter offset
     public static final double	kShooterOffsetDegX = 0,
-					kShooterOffsetDegY = 0;
+					kShooterOffsetDegY = 80;
 
     public static final int[]	resolution	   = { 640, 360 };
 
@@ -308,9 +308,8 @@ public class FOXACID extends VideoStreamViewerExtension {
 	double distanceCenterY = (bestTarget.tl().y + bestTarget.br().y) / 2;
 	distanceCenterY = -((2 * (distanceCenterY / src.height())) - 1);
 
-	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + heading - kShooterOffsetDegX;
-	double altitude = distanceCenterY * kVerticalFOV / 2.0 + angleOfShooter - kShooterOffsetDegY;
-	altitude = kCameraAngle - altitude; // angle the shooter needs to be at
+	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + heading + kShooterOffsetDegX;
+	double altitude = distanceCenterY * kVerticalFOV / 2.0 + angleOfShooter + kShooterOffsetDegY;
 	double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle) * Math.PI / 180.0);
 
 	try {

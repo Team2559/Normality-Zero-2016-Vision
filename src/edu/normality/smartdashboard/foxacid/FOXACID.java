@@ -379,9 +379,9 @@ public class FOXACID extends VideoStreamViewerExtension {
     public void init() {
 	setPreferredSize(new Dimension(resolution[0], resolution[1]));
 	angleTable = new TreeMap<Double,Double>();
-        //rangeTable.put(110.0, 3800.0+kAngleOffset);
-        //rangeTable.put(120.0, 3900.0+kAngleOffset);
-        //rangeTable.put(130.0, 4000.0+kAngleOffset);
+        angleTable.put(110.0, 3800.0+kAngleOffset);
+        angleTable.put(120.0, 3900.0+kAngleOffset);
+        angleTable.put(130.0, 4000.0+kAngleOffset);
         angleTable.put(140.0, 3434.0+kAngleOffset);
         angleTable.put(150.0, 3499.0+kAngleOffset);
         angleTable.put(160.0, 3544.0+kAngleOffset);

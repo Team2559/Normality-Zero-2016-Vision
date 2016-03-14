@@ -31,59 +31,57 @@ import edu.wpi.first.wpilibj.tables.ITable;
 
 public class FOXACID extends VideoStreamViewerExtension {
 
-    public static final String	NAME		   = "FOXACID - Tower Tracker";
-    private boolean		ipChanged	   = true;
-    private String		ipString	   = null;
-    private long		lastFPSCheck	   = 5L;
-    private int			lastFPS		   = 4;
-    private int			fpsCounter	   = 3;
-    private BufferedImage	imageToDraw;
+    public static final String	    NAME	       = "FOXACID - Tower Tracker";
+    private boolean		    ipChanged	       = true;
+    private String		    ipString	       = null;
+    private long		    lastFPSCheck       = 5L;
+    private int			    lastFPS	       = 4;
+    private int			    fpsCounter	       = 3;
+    private BufferedImage	    imageToDraw;
 
-    public static final double	kMorphKernelSize   = 1;
-    public static final int	kMinHue		   = 50;
-    public static final int	kMinSat		   = 120;
-    public static final int	kMinVal		   = 100;
+    public static final double	    kMorphKernelSize   = 1;
+    public static final int	    kMinHue	       = 50;
+    public static final int	    kMinSat	       = 120;
+    public static final int	    kMinVal	       = 100;
 
-    public static final int	kMaxHue		   = 100;
-    public static final int	kMaxSat		   = 255;
-    public static final int	kMaxVal		   = 255;
+    public static final int	    kMaxHue	       = 100;
+    public static final int	    kMaxSat	       = 255;
+    public static final int	    kMaxVal	       = 255;
 
     // Constants for known variables
     // the height to the top of the target in first stronghold is 97 inches
-    public static final int	kTopTargetHeight   = 97;
+    public static final int	    kTopTargetHeight   = 97;
     // the physical height of the camera lens
-    public static final int	kTopCameraHeight   = 11;			     // actually 11.5
+    public static final int	    kTopCameraHeight   = 11;				 // actually 11.5
 
     // camera details, can usually be found on the datasheets of the camera
-    public static final double	kVerticalFOV	   = 33.6;
-    public static final double	kHorizontalFOV	   = 59.7;
-    public static final double	kCameraAngle	   = 28;			     // 32.64
+    public static final double	    kVerticalFOV       = 33.6;
+    public static final double	    kHorizontalFOV     = 59.7;
+    public static final double	    kCameraAngle       = 28;				 // 32.64
 
     // shooter offset
-    public static final double	kShooterOffsetDegX = 5,
-					kShooterOffsetDegY = 80,
-					kAngleOffset = 0;
-    
+    public static final double	    kShooterOffsetDegX = 5,
+            kShooterOffsetDegY = 80,
+            kAngleOffset = 0;
 
-    public static final int[]	resolution	   = { 640, 360 };
+    public static final int[]	    resolution	       = { 640, 360 };
 
-    public static final Scalar	kOtherTargetsColor = new Scalar(255, 255, 0),	     // cyan
-	    kBestTargetColor = new Scalar(0, 128, 255);				     // orange
+    public static final Scalar	    kOtherTargetsColor = new Scalar(255, 255, 0),	 // cyan
+            kBestTargetColor = new Scalar(0, 128, 255);					 // orange
 
-    public static final boolean	debug		   = false;
+    public static final boolean	    debug	       = false;
 
-    public double		heading		   = 0,
-					angleOfShooter = 0;
-    
+    public double		    heading	       = 0,
+            angleOfShooter = 0;
+
     private TreeMap<Double, Double> angleTable;
 
+    ITable			    outputTable;
 
-    ITable			outputTable;
-
-    static Mat			src, dest, image;
+    static Mat			    src, dest, image;
 
     static {
-	//System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+	// System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 	String libPath = System.getProperty("java.library.path");
 	System.load("C:\\opencv_3\\build\\java\\x64\\" + Core.NATIVE_LIBRARY_NAME + ".dll");
 	NetworkTable.setClientMode();
@@ -92,7 +90,6 @@ public class FOXACID extends VideoStreamViewerExtension {
     public static void main(String[] args) {
 	return;
     }
-    
 
     public class BGThread extends Thread {
 
@@ -178,7 +175,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 
 	Mat hsv = new Mat(), thresh = new Mat(), heirarchy = new Mat();
 	Scalar lowerBound = new Scalar(FOXACIDCONFIGURE.getMinHue(), FOXACIDCONFIGURE.getMinSat(), FOXACIDCONFIGURE.getMinVal()),
-		upperBound = new Scalar(FOXACIDCONFIGURE.getMaxHue(), FOXACIDCONFIGURE.getMaxSat(), FOXACIDCONFIGURE.getMaxVal());
+	        upperBound = new Scalar(FOXACIDCONFIGURE.getMaxHue(), FOXACIDCONFIGURE.getMaxSat(), FOXACIDCONFIGURE.getMaxVal());
 	List<MatOfPoint> contours = new ArrayList<>();
 	// read the image
 	// src = Imgcodecs.imread(filePath + extension);
@@ -340,32 +337,27 @@ public class FOXACID extends VideoStreamViewerExtension {
     private BGThread		   bgThread   = new BGThread();
     private final int		   team	      = DashboardPrefs.getInstance().team.getValue().intValue();
     public final IPAddressProperty ipProperty = new IPAddressProperty(this, "Camera IP Address",
-	    new int[] { 10, DashboardPrefs.getInstance().team.getValue().intValue() / 100, DashboardPrefs.getInstance().team.getValue().intValue() % 100, 11 });
+            new int[] { 10, DashboardPrefs.getInstance().team.getValue().intValue() / 100, DashboardPrefs.getInstance().team.getValue().intValue() % 100, 11 });
 
-    public double getAngleForRange(double range)
-    {
-        double lowKey = -1.0;
-        double lowVal = -1.0;
-        for( double key : angleTable.keySet() )
-        {
-            if( range < key )
-            {
-                double highVal = angleTable.get(key);
-                if( lowKey > 0.0 )
-                {
-                    double m = (range-lowKey)/(key-lowKey);
-                    return lowVal+m*(highVal-lowVal);
-                }
-                else
-                    return highVal;
-            }
-            lowKey = key;
-            lowVal = angleTable.get(key);
-        }
+    public double getAngleForRange(double range) {
+	double lowKey = -1.0;
+	double lowVal = -1.0;
+	for (double key : angleTable.keySet()) {
+	    if (range < key) {
+		double highVal = angleTable.get(key);
+		if (lowKey > 0.0) {
+		    double m = (range - lowKey) / (key - lowKey);
+		    return lowVal + m * (highVal - lowVal);
+		} else
+		    return highVal;
+	    }
+	    lowKey = key;
+	    lowVal = angleTable.get(key);
+	}
 
-        return 5234.0+kShooterOffsetDegY;
+	return 5234.0 + kShooterOffsetDegY;
     }
-    
+
     public double boundAngle0to360Degrees(double angle) {
 	while (angle >= 360.0) {
 	    angle -= 360.0;
@@ -378,24 +370,20 @@ public class FOXACID extends VideoStreamViewerExtension {
 
     public void init() {
 	setPreferredSize(new Dimension(resolution[0], resolution[1]));
-	angleTable = new TreeMap<Double,Double>();
-        angleTable.put(110.0, 3800.0+kAngleOffset);
-        angleTable.put(120.0, 3900.0+kAngleOffset);
-        angleTable.put(130.0, 4000.0+kAngleOffset);
-        angleTable.put(140.0, 3434.0+kAngleOffset);
-        angleTable.put(150.0, 3499.0+kAngleOffset);
-        angleTable.put(160.0, 3544.0+kAngleOffset);
-        angleTable.put(170.0, 3574.0+kAngleOffset);
-        angleTable.put(180.0, 3609.0+kAngleOffset);
-        angleTable.put(190.0, 3664.0+kAngleOffset);
-        angleTable.put(200.0, 3854.0+kAngleOffset);
-        angleTable.put(210.0, 4034.0+kAngleOffset);
-        angleTable.put(220.0, 4284.0+kAngleOffset);
-        angleTable.put(230.0, 4434.0+kAngleOffset);
-        angleTable.put(240.0, 4584.0+kAngleOffset);
-        angleTable.put(250.0, 4794.0+kAngleOffset);
-        angleTable.put(260.0, 5034.0+kAngleOffset);
-        angleTable.put(270.0, 5234.0+kAngleOffset);
+	angleTable = new TreeMap<Double, Double>();
+	angleTable.put(110.0, 80.0 + kAngleOffset);
+	angleTable.put(120.0, 75.0 + kAngleOffset);
+	angleTable.put(130.0, 70.0 + kAngleOffset);
+	angleTable.put(140.0, 65.0 + kAngleOffset);
+	angleTable.put(150.0, 60.0 + kAngleOffset);
+	angleTable.put(160.0, 55.0 + kAngleOffset);
+	angleTable.put(170.0, 50.0 + kAngleOffset);
+	angleTable.put(180.0, 3609.0 + kAngleOffset);
+	angleTable.put(190.0, 3664.0 + kAngleOffset);
+	angleTable.put(200.0, 4794.0 + kAngleOffset);
+	angleTable.put(210.0, 5034.0 + kAngleOffset);
+	angleTable.put(220.0, 5034.0 + kAngleOffset);
+	angleTable.put(230.0, 5234.0 + kAngleOffset); // 230 in = 19.1667 feet
 	this.ipString = this.ipProperty.getSaveValue();
 	this.bgThread.start();
 	revalidate();
@@ -422,7 +410,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 	    double scale = Math.min(width / drawnImage.getWidth(), height / drawnImage.getHeight());
 	    scale = 0.9;
 	    g.drawImage(drawnImage, (int) (width - scale * drawnImage.getWidth()) / 2, (int) (height - scale * drawnImage.getHeight()) / 2, (int) ((width + scale * drawnImage.getWidth()) / 2.0D),
-		    (int) (height + scale * drawnImage.getHeight()) / 2, 0, 0, drawnImage.getWidth(), drawnImage.getHeight(), null);
+	            (int) (height + scale * drawnImage.getHeight()) / 2, 0, 0, drawnImage.getWidth(), drawnImage.getHeight(), null);
 
 	    g.setColor(Color.PINK);
 	    g.drawString("FPS: " + this.lastFPS, 10, 10);

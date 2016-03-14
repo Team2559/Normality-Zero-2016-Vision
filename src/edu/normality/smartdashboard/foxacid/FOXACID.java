@@ -355,7 +355,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 	    lowVal = angleTable.get(key);
 	}
 
-	return 5234.0 + kShooterOffsetDegY;
+	return 45;
     }
 
     public double boundAngle0to360Degrees(double angle) {

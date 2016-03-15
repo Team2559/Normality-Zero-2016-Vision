@@ -378,12 +378,12 @@ public class FOXACID extends VideoStreamViewerExtension {
 	angleTable.put(150.0, 60.0 + kAngleOffset);
 	angleTable.put(160.0, 55.0 + kAngleOffset);
 	angleTable.put(170.0, 50.0 + kAngleOffset);
-	angleTable.put(180.0, 3609.0 + kAngleOffset);
-	angleTable.put(190.0, 3664.0 + kAngleOffset);
-	angleTable.put(200.0, 4794.0 + kAngleOffset);
-	angleTable.put(210.0, 5034.0 + kAngleOffset);
-	angleTable.put(220.0, 5034.0 + kAngleOffset);
-	angleTable.put(230.0, 5234.0 + kAngleOffset); // 230 in = 19.1667 feet
+	angleTable.put(180.0, 50.0 + kAngleOffset);
+	angleTable.put(190.0, 50.0 + kAngleOffset);
+	angleTable.put(200.0, 50.0 + kAngleOffset);
+	angleTable.put(210.0, 50.0 + kAngleOffset);
+	angleTable.put(220.0, 50.0 + kAngleOffset);
+	angleTable.put(230.0, 50.0 + kAngleOffset); // 230 in = 19.1667 feet
 	this.ipString = this.ipProperty.getSaveValue();
 	this.bgThread.start();
 	revalidate();

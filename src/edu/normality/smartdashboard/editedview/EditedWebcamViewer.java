@@ -1,6 +1,7 @@
 
 package edu.normality.smartdashboard.editedview;
 
+import edu.normality.smartdashboard.foxacid.FOXACID;
 import edu.wpi.first.smartdashboard.gui.StaticWidget;
 import edu.wpi.first.smartdashboard.properties.*;
 import edu.wpi.first.smartdashboard.robot.Robot;
@@ -24,7 +25,7 @@ import java.util.Arrays;
 
 public class EditedWebcamViewer extends StaticWidget implements Runnable {
 	
-	public static final String NAME = "USB Webcam Viewer (Edited)";
+	public static final String NAME = "FOXACID " + FOXACID.VERSION + " - USB Webcam Viewer";
 
     public final IntegerProperty fpsProperty = new IntegerProperty(this, "FPS", 30);
     public final MultiProperty sizeProperty;

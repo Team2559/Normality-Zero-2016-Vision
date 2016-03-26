@@ -13,12 +13,13 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import edu.normality.smartdashboard.foxacid.FOXACID;
 import edu.wpi.first.smartdashboard.gui.StaticWidget;
 import edu.wpi.first.smartdashboard.properties.Property;
 
 public class FOXACIDCONFIGURE extends StaticWidget {
 	
-	public static final String NAME = "FOXACID - Configurer";
+    public static final String	    NAME	       = "FOXACID " + FOXACID.VERSION + " - Configurer";
 	
 	public static final int kMinHue = 45,
 							kMinSat = 120,

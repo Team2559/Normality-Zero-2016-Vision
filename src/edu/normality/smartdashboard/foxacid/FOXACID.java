@@ -5,9 +5,12 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -118,7 +121,12 @@ public class FOXACID extends VideoStreamViewerExtension {
 			    FOXACID.this.lastFPS = (FOXACID.this.fpsCounter * 2);
 			    FOXACID.this.fpsCounter = 0;
 			}
-			BufferedImage img = EditedWebcamViewer.getLatestCapture();
+			BufferedImage img;
+			if (!debug)
+			    img = EditedWebcamViewer.getLatestCapture();
+			else
+			    img = ImageIO.read(new File("strawberry.jpg"));
+			
 			byte[] data = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
 			Mat original = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
 			original.put(0, 0, data);

@@ -56,12 +56,12 @@ public class FOXACID extends VideoStreamViewerExtension {
     // the height to the top of the target in first stronghold is 97 inches
     public static final int	    kTopTargetHeight   = 97;
     // the physical height of the camera lens
-    public static final int	    kTopCameraHeight   = 11;				 // actually 11.5
+    public static final int	    kTopCameraHeight   = 11;					   // actually 11.5
 
     // camera details, can usually be found on the datasheets of the camera
     public static final double	    kVerticalFOV       = 33.6;
     public static final double	    kHorizontalFOV     = 59.7;
-    public static final double	    kCameraAngle       = 32;				 // 32.64
+    public static final double	    kCameraAngle       = 32;					   // 32.64
 
     // shooter offset
     public static final double	    kShooterOffsetDegX = 5,
@@ -70,8 +70,8 @@ public class FOXACID extends VideoStreamViewerExtension {
 
     public static final int[]	    resolution	       = { 640, 360 };
 
-    public static final Scalar	    kOtherTargetsColor = new Scalar(255, 255, 0),	 // cyan
-            kBestTargetColor = new Scalar(0, 128, 255);					 // orange
+    public static final Scalar	    kOtherTargetsColor = new Scalar(255, 255, 0),		   // cyan
+            kBestTargetColor = new Scalar(0, 128, 255);						   // orange
 
     public static final boolean	    debug	       = false;
 
@@ -123,7 +123,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 			    img = EditedWebcamViewer.getLatestCapture();
 			else
 			    img = ImageIO.read(new File("strawberry.jpg"));
-			
+
 			byte[] data = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
 			Mat original = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
 			original.put(0, 0, data);
@@ -165,7 +165,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     }
 
     private Mat findTower(Mat src) {
-	boolean[] badApples;
+	// boolean[] badApples;
 	Rect bestTarget = new Rect();
 	double startTime = System.currentTimeMillis();
 	FOXACIDCONFIGURE.minHueLabel.setText("minHue: " + FOXACIDCONFIGURE.minHueSlider.getValue());
@@ -198,31 +198,36 @@ public class FOXACID extends VideoStreamViewerExtension {
 	Imgproc.findContours(thresh.clone(), contours, heirarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
 	System.out.println("Contours size before: " + contours.size());
-	badApples = new boolean[contours.size()];
-	//ArrayList<> canUse = new ArrayList<>();
+	// badApples = new boolean[contours.size()];
+	// ArrayList<> canUse = new ArrayList<>();
 	for (int dre = 0; dre < contours.size(); dre++) {
 	    Rect tempRec = Imgproc.boundingRect(contours.get(dre));
 	    int width = tempRec.width, height = tempRec.height;
 	    double aspect = (double) width / height;
 
-	    boolean shouldRemove = false;
-	    if (width <= FOXACIDCONFIGURE.getMinWidth()) {
-		shouldRemove = true;
-	    }
-	    if (height <= FOXACIDCONFIGURE.getMinHeight()) {
-		shouldRemove = true;
-	    }
-	    if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
-		shouldRemove = true;
-	    }
-	    if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
-		shouldRemove = true;
+	    if ((width <= FOXACIDCONFIGURE.getMinWidth()) || (height <= FOXACIDCONFIGURE.getMinHeight()) || (aspect < FOXACIDCONFIGURE.getMinAspect()) || (aspect > FOXACIDCONFIGURE.getMaxAspect())) {
+		contours.remove(dre);
+		dre--;
 	    }
 
-	    if (shouldRemove) {
-		badApples[dre] = true;
-	    } //else canUse.put(xxxx);
-	    
+	    // boolean shouldRemove = false;
+	    // if (width <= FOXACIDCONFIGURE.getMinWidth()) {
+	    // shouldRemove = true;
+	    // }
+	    // if (height <= FOXACIDCONFIGURE.getMinHeight()) {
+	    // shouldRemove = true;
+	    // }
+	    // if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
+	    // shouldRemove = true;
+	    // }
+	    // if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
+	    // shouldRemove = true;
+	    // }
+	    //
+	    // if (shouldRemove) {
+	    // badApples[dre] = true;
+	    // } // else canUse.put(xxxx);
+
 	    // arr.remove(xxx)
 	    // dre--;
 	}
@@ -245,24 +250,20 @@ public class FOXACID extends VideoStreamViewerExtension {
 	} else if (contours.size() == 1) { // only one object found
 	    Rect rec1 = Imgproc.boundingRect(contours.get(0));
 
-	    int width = rec1.width;
-	    int height = rec1.height;
-	    double aspect = (double) width / height;
-
-	    if (badApples[0]) {
-		try {
-		    outputTable.putBoolean("foundTower", false);
-		    outputTable.putNumber("towerXOffset", 0);
-		    outputTable.putNumber("towerYOffset", 0);
-		    outputTable.putNumber("distanceFromTarget", 0);
-		    outputTable.putNumber("azimuth", 0);
-		    outputTable.putNumber("altitude", 0);
-		    outputTable.putNumber("angle", 0);
-		    return src;
-		} catch (Exception e) {
-		    e.printStackTrace();
-		}
-	    }
+	    // if (badApples[0]) {
+	    // try {
+	    // outputTable.putBoolean("foundTower", false);
+	    // outputTable.putNumber("towerXOffset", 0);
+	    // outputTable.putNumber("towerYOffset", 0);
+	    // outputTable.putNumber("distanceFromTarget", 0);
+	    // outputTable.putNumber("azimuth", 0);
+	    // outputTable.putNumber("altitude", 0);
+	    // outputTable.putNumber("angle", 0);
+	    // return src;
+	    // } catch (Exception e) {
+	    // e.printStackTrace();
+	    // }
+	    // }
 
 	    bestTarget = rec1;
 	} else {
@@ -275,7 +276,19 @@ public class FOXACID extends VideoStreamViewerExtension {
 		int height = rec1.height;
 		double aspect = (double) width / height;
 
-		if (!badApples[i] && (bestTarget != rec1)) {
+		// if (!badApples[i] && (bestTarget != rec1)) {
+		// /**
+		// * if the width of this rec is greater than our current best
+		// * target (we want the target with the largest width because
+		// * that means it's the most centered)
+		// **/
+		// if (bestTarget.width > rec1.width) {
+		// bestTarget = rec1;
+		// }
+		// // Imgproc.rectangle(src, rec1.tl(), rec1.br(), kOtherTargetsColor);
+		// }
+
+		if (bestTarget != rec1) {
 		    /**
 		     * if the width of this rec is greater than our current best
 		     * target (we want the target with the largest width because

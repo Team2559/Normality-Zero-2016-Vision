@@ -165,7 +165,6 @@ public class FOXACID extends VideoStreamViewerExtension {
     }
 
     private Mat findTower(Mat src) {
-	// boolean[] badApples;
 	Rect bestTarget = new Rect();
 	double startTime = System.currentTimeMillis();
 	FOXACIDCONFIGURE.minHueLabel.setText("minHue: " + FOXACIDCONFIGURE.minHueSlider.getValue());
@@ -198,7 +197,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 	Imgproc.findContours(thresh.clone(), contours, heirarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
 	System.out.println("Contours size before: " + contours.size());
-	// badApples = new boolean[contours.size()];
 	// ArrayList<> canUse = new ArrayList<>();
 	for (int dre = 0; dre < contours.size(); dre++) {
 	    Rect tempRec = Imgproc.boundingRect(contours.get(dre));
@@ -209,27 +207,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 		contours.remove(dre);
 		dre--;
 	    }
-
-	    // boolean shouldRemove = false;
-	    // if (width <= FOXACIDCONFIGURE.getMinWidth()) {
-	    // shouldRemove = true;
-	    // }
-	    // if (height <= FOXACIDCONFIGURE.getMinHeight()) {
-	    // shouldRemove = true;
-	    // }
-	    // if (aspect < FOXACIDCONFIGURE.getMinAspect()) {
-	    // shouldRemove = true;
-	    // }
-	    // if (aspect > FOXACIDCONFIGURE.getMaxAspect()) {
-	    // shouldRemove = true;
-	    // }
-	    //
-	    // if (shouldRemove) {
-	    // badApples[dre] = true;
-	    // } // else canUse.put(xxxx);
-
-	    // arr.remove(xxx)
-	    // dre--;
 	}
 	System.out.println("Contours size after: " + contours.size());
 	System.out.println("-------------------");
@@ -250,21 +227,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 	} else if (contours.size() == 1) { // only one object found
 	    Rect rec1 = Imgproc.boundingRect(contours.get(0));
 
-	    // if (badApples[0]) {
-	    // try {
-	    // outputTable.putBoolean("foundTower", false);
-	    // outputTable.putNumber("towerXOffset", 0);
-	    // outputTable.putNumber("towerYOffset", 0);
-	    // outputTable.putNumber("distanceFromTarget", 0);
-	    // outputTable.putNumber("azimuth", 0);
-	    // outputTable.putNumber("altitude", 0);
-	    // outputTable.putNumber("angle", 0);
-	    // return src;
-	    // } catch (Exception e) {
-	    // e.printStackTrace();
-	    // }
-	    // }
-
 	    bestTarget = rec1;
 	} else {
 	    Imgproc.putText(src, "Contours: " + contours.size(), new Point(1, 80), Core.FONT_HERSHEY_DUPLEX, 0.5, new Scalar(255, 255, 0));
@@ -275,18 +237,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 		int width = rec1.width;
 		int height = rec1.height;
 		double aspect = (double) width / height;
-
-		// if (!badApples[i] && (bestTarget != rec1)) {
-		// /**
-		// * if the width of this rec is greater than our current best
-		// * target (we want the target with the largest width because
-		// * that means it's the most centered)
-		// **/
-		// if (bestTarget.width > rec1.width) {
-		// bestTarget = rec1;
-		// }
-		// // Imgproc.rectangle(src, rec1.tl(), rec1.br(), kOtherTargetsColor);
-		// }
 
 		if (bestTarget != rec1) {
 		    /**

@@ -61,7 +61,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     // camera details, can usually be found on the datasheets of the camera
     public static final double	    kVerticalFOV       = 33.6;
     public static final double	    kHorizontalFOV     = 59.7;
-    public static final double	    kCameraAngle       = 28;				 // 32.64
+    public static final double	    kCameraAngle       = 32;				 // 32.64
 
     // shooter offset
     public static final double	    kShooterOffsetDegX = 5,
@@ -74,9 +74,6 @@ public class FOXACID extends VideoStreamViewerExtension {
             kBestTargetColor = new Scalar(0, 128, 255);					 // orange
 
     public static final boolean	    debug	       = false;
-
-    public double		    heading	       = 0,
-            angleOfShooter = 0;
 
     private TreeMap<Double, Double> angleTable;
 
@@ -202,6 +199,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 
 	System.out.println("Contours size before: " + contours.size());
 	badApples = new boolean[contours.size()];
+	//ArrayList<> canUse = new ArrayList<>();
 	for (int dre = 0; dre < contours.size(); dre++) {
 	    Rect tempRec = Imgproc.boundingRect(contours.get(dre));
 	    int width = tempRec.width, height = tempRec.height;
@@ -223,7 +221,10 @@ public class FOXACID extends VideoStreamViewerExtension {
 
 	    if (shouldRemove) {
 		badApples[dre] = true;
-	    }
+	    } //else canUse.put(xxxx);
+	    
+	    // arr.remove(xxx)
+	    // dre--;
 	}
 	System.out.println("Contours size after: " + contours.size());
 	System.out.println("-------------------");
@@ -323,8 +324,8 @@ public class FOXACID extends VideoStreamViewerExtension {
 	double distanceCenterY = (bestTarget.tl().y + bestTarget.br().y) / 2;
 	distanceCenterY = -((2 * (distanceCenterY / src.height())) - 1);
 
-	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + heading + kShooterOffsetDegX;
-	double altitude = distanceCenterY * kVerticalFOV / 2.0 + angleOfShooter + kShooterOffsetDegY;
+	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + kShooterOffsetDegX;
+	double altitude = distanceCenterY * kVerticalFOV / 2.0 + kShooterOffsetDegY;
 	double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle) * Math.PI / 180.0);
 	double angle = getAngleForRange(range);
 

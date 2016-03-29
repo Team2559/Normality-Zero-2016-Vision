@@ -24,6 +24,7 @@ import org.opencv.imgproc.Imgproc;
 
 import edu.normality.smartdashboard.editedview.EditedWebcamViewer;
 import edu.normality.smartdashboard.foxacidconfigure.FOXACIDCONFIGURE;
+import edu.normality.smartdashboard.foxacidconfigure.ShooterData;
 import edu.wpi.first.smartdashboard.gui.DashboardPrefs;
 import edu.wpi.first.smartdashboard.gui.elements.VideoStreamViewerExtension;
 import edu.wpi.first.smartdashboard.properties.IPAddressProperty;
@@ -290,7 +291,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + kShooterOffsetDegX;
 	double altitude = distanceCenterY * kVerticalFOV / 2.0 + kShooterOffsetDegY;
 	double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle) * Math.PI / 180.0);
-	double angle = getAngleForRange(range);
+	double angle = ShooterData.getShooterAngle(range, 97);
 
 	try {
 	    outputTable.putNumber("distanceFromTarget", range);

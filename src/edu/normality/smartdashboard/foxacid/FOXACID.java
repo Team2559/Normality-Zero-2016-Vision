@@ -65,7 +65,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     public static final double	    kCameraAngle       = 32;					   // 32.64
 
     // shooter offset
-    public static final double	    kShooterOffsetDegX = 5,
+    public static final double	    kShooterOffsetDegX = 2.5,
             kShooterOffsetDegY = 0,
             kAngleOffset = 0;
 

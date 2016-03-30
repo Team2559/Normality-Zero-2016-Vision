@@ -179,6 +179,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 	FOXACIDCONFIGURE.minWidthLabel.setText("minWidth: " + FOXACIDCONFIGURE.minWidthSlider.getValue());
 	FOXACIDCONFIGURE.minAspectLabel.setText("minAspect: " + (double) FOXACIDCONFIGURE.minAspectSlider.getValue() / 500d);
 	FOXACIDCONFIGURE.maxAspectLabel.setText("maxAspect: " + (double) FOXACIDCONFIGURE.maxAspectSlider.getValue() / 200d);
+	FOXACIDCONFIGURE.hitDistanceLabel.setText("hitDistance: " + FOXACIDCONFIGURE.hitDistanceSlider.getValue());
 
 	Mat hsv = new Mat(), thresh = new Mat(), heirarchy = new Mat();
 	Scalar lowerBound = new Scalar(FOXACIDCONFIGURE.getMinHue(), FOXACIDCONFIGURE.getMinSat(), FOXACIDCONFIGURE.getMinVal()),
@@ -328,7 +329,12 @@ public class FOXACID extends VideoStreamViewerExtension {
 	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + kShooterOffsetDegX;
 	double altitude = distanceCenterY * kVerticalFOV / 2.0 + kShooterOffsetDegY;
 	double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle) * Math.PI / 180.0);
-	double angle = ShooterData.getShooterAngle(range, 97);
+	double angle = 45;
+	try {
+	    angle = ShooterData.getShooterAngle(range, FOXACIDCONFIGURE.hitDistanceSlider.getValue());
+	} catch (ArrayIndexOutOfBoundsException e) {
+	    e.printStackTrace();
+	}
 
 	try {
 	    outputTable.putNumber("distanceFromTarget", range);

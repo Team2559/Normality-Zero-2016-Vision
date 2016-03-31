@@ -3,6 +3,10 @@ package edu.normality.smartdashboard.foxacidconfigure;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+
+import flanagan.analysis.Normality;
 import flanagan.interpolation.CubicSpline;
 
 /**
@@ -13,8 +17,21 @@ import flanagan.interpolation.CubicSpline;
  *
  */
 public class ShooterData {
+	// The min and max height we can aim at
 	public final static int MIN_HIT_HEIGHT = 85;
 	public final static int MAX_HIT_HEIGHT = 100;
+
+	// The height and width of the window and the size of the ball
+	private final static double targetStartY = 97;
+	private final static double targetEndY = 117;
+	// We want to hit the center X of window so we want 1/2 of width each side
+	private final static double targetStartX = -10;
+	private final static double targetEndX = 10;
+	private final static double ballDiam = 5;
+
+	// For calculating probability of shot
+	private final static SummaryStatistics statsX = new SummaryStatistics();
+	private final static NormalDistribution xShotDist;
 
 	// The initial splines we will calculate values from
 	// This is real/observed data
@@ -163,6 +180,22 @@ public class ShooterData {
 			final CubicSpline distToAngleForGivenHeight = new CubicSpline(distFromTarget, angleToShoot);
 			hitHeightDistAngleSpline.put(hitHeight, distToAngleForGivenHeight);
 		}
+
+		/**
+		 * Data for variance of where ball hits. I.e. how accurate are we? How
+		 * likely is the ball to go in?
+		 */
+		// For this the distance and angle needs to be the same
+		// The height the ball hit when at the same distance and angle
+		double[] at175y = new double[] { 97, 95, 99, 97, 98, 101, 97 };
+		// The amount the ball way left/right of center when the ball hit
+		double[] at175x = new double[] { 0, -2, 1, -0.5, -1, 2, 1, 0 };
+
+		// Create the X distribution for hitting
+
+		for (double d : at175x)
+			statsX.addValue(d);
+		xShotDist = new NormalDistribution(statsX.getMean(), statsX.getVariance());
 	}
 
 	/**
@@ -197,8 +230,63 @@ public class ShooterData {
 		return cs.interpolate(distance);
 	}
 
+	public static double hitChance(double distanceFromTarget, double targetAngleXError, double targetAngleYError) {
+		// First calculate the probability we get the ball in the target with
+		// regards to our X (left/right) position. What matters here is how far
+		// away we are and what error there is in us aligning with the target
+
+		// A is the angle error the shooter is at for left/right
+		double A = Math.abs(targetAngleXError);
+		double Arad = Math.toRadians(A);
+
+		// B is at the tower, it's flat so a 90 degree angle of distance we will
+		// be off
+		double B = 90;
+		double Brad = Math.toRadians(B);
+
+		// C is the angle at the end of the error
+		double C = (180 - A) - B;
+		double Crad = Math.toRadians(C);
+
+		// c is the distance from the tower
+		double c = distanceFromTarget;
+
+		//System.out.println("c " + c + " crad " + Crad + " C " + C + " Arad " + " A ");
+		double xErrorDistAtTarget = ShooterAngleError.saeSinRuleTwoAng(Crad, c, Arad);
+
+		// Now we have the error size at the target we can calculate the
+		// probability we hit it
+		// The probability that the ball goes in is:
+		// - Where the center of the ball will hit
+		// - Plus the diameter of the ball
+		// - Plus the distribution of the variance in the shooting X
+		// Let's start that the ball is 0 size and hits the middle
+		double edge = 0;
+
+		// Add the error due to the X angle error
+		edge += xErrorDistAtTarget;
+
+		// Add the width of the ball
+		edge += ballDiam;
+
+		// We will now calculate the probability that the ball goes in. Normally
+		// i would have to hit between the windows, to account for the shooting
+		// X error we will shift the window to the side
+		// As we did Math.abs(error_angle) the error will always offset in the
+		// same direction
+		System.out.println("Distance error at tower: " + xErrorDistAtTarget + " inches");
+		double xHitProb = xShotDist.probability(targetStartX - edge, targetEndX - edge);
+		System.out.println("Probability of scoring: " + xHitProb + " I.e. " + xHitProb * 100 + "%");
+
+		// TODO: we can also do a similar thing with Y distribution
+		double yHitProb = 1.0;
+		
+		return xHitProb * yHitProb;
+	}
+
 	/**
 	 * Example of what is happening
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
@@ -257,5 +345,13 @@ public class ShooterData {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			System.out.println("We don't have the data to calculate the angle");
 		}
+		// Example prob of hit from 10 feet away
+		// 1* error
+		hitChance(10 * 12, 1, 0);
+		// 2* error
+		hitChance(10 * 12, 2, 0);
+		// 4* error
+		hitChance(10 * 12, 4, 0);
+
 	}
 }

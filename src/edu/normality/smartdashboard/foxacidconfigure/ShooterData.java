@@ -19,10 +19,16 @@ public class ShooterData {
 	// The initial splines we will calculate values from
 	// This is real/observed data
 	private final static ArrayList<ShootDistanceDataPoint> allData = new ArrayList<ShootDistanceDataPoint>();
+	private final static ShootDistanceDataPoint dist218 = new ShootDistanceDataPoint(218);
+	private final static ShootDistanceDataPoint dist205 = new ShootDistanceDataPoint(205);
+	private final static ShootDistanceDataPoint dist204 = new ShootDistanceDataPoint(204);
 	private final static ShootDistanceDataPoint dist190 = new ShootDistanceDataPoint(190);
 	private final static ShootDistanceDataPoint dist176 = new ShootDistanceDataPoint(176);
 	private final static ShootDistanceDataPoint dist164 = new ShootDistanceDataPoint(164);
+	private final static ShootDistanceDataPoint dist149 = new ShootDistanceDataPoint(149);
 	private final static ShootDistanceDataPoint dist136 = new ShootDistanceDataPoint(136);
+	private final static ShootDistanceDataPoint dist127 = new ShootDistanceDataPoint(127);
+	private final static ShootDistanceDataPoint dist117 = new ShootDistanceDataPoint(117);
 	private final static ShootDistanceDataPoint dist114 = new ShootDistanceDataPoint(114);
 	private final static ShootDistanceDataPoint dist92 = new ShootDistanceDataPoint(92);
 	private final static ShootDistanceDataPoint dist82 = new ShootDistanceDataPoint(82);
@@ -41,6 +47,15 @@ public class ShooterData {
 		 * This tells us at what height the ball hit the wall with a given
 		 * shooter angle at a given distance
 		 */
+	    
+        	dist218.addDataPoint(28.19, 92);
+        
+        	dist205.addDataPoint(22.653, 70);
+        	dist205.addDataPoint(28.541, 104);
+        	
+        	dist204.addDataPoint(28.541, 97);
+	    	
+
 		// Add the data when we were 190 away from target
 		dist190.addDataPoint(34.166, 109);
 		dist190.addDataPoint(32.145, 96);
@@ -57,12 +72,28 @@ public class ShooterData {
 		dist164.addDataPoint(29.596, 80);
 		dist164.addDataPoint(35.221, 101);
 		dist164.addDataPoint(37.594, 110);
+		dist164.addDataPoint(28.19,83);
+		dist164.addDataPoint(35.221,111);
+		dist164.addDataPoint(28.893,84);
+		dist164.addDataPoint(33.453,104);
+		
+		dist149.addDataPoint(33.463,98);
+		dist149.addDataPoint(28.981,81);
+		dist149.addDataPoint(35.221,108);
 
 		dist136.addDataPoint(36.276, 96);
 		dist136.addDataPoint(35.924, 97);
 		dist136.addDataPoint(36.891, 101.5);
 		dist136.addDataPoint(36.891, 79.5);
 		dist136.addDataPoint(39.703, 104);
+		
+		dist127.addDataPoint(34.518,94);
+		dist127.addDataPoint(36.276,97);
+		
+		dist117.addDataPoint(35.221,88);
+		dist117.addDataPoint(39,103);
+		dist117.addDataPoint(29.596,72);
+		dist117.addDataPoint(33.815,85);
 
 		dist114.addDataPoint(39.703, 98.5);
 		dist114.addDataPoint(35.571, 82.5);
@@ -83,11 +114,17 @@ public class ShooterData {
 		dist82.addDataPoint(52.65, 112);
 		dist82.addDataPoint(42.067, 80.5);
 		dist82.addDataPoint(43.219, 86);
-
+        	
+        	allData.add(dist218);
+        	allData.add(dist205);
+        	allData.add(dist204);
 		allData.add(dist190);
 		allData.add(dist176);
 		allData.add(dist164);
+		allData.add(dist149);
 		allData.add(dist136);
+		allData.add(dist127);
+		allData.add(dist117);
 		allData.add(dist114);
 		allData.add(dist92);
 		allData.add(dist82);

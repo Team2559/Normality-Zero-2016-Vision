@@ -224,7 +224,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 		outputTable.putNumber("distanceFromTarget", 0);
 		outputTable.putNumber("azimuth", 0);
 		outputTable.putNumber("altitude", 0);
-		outputTable.putNumber("angle", 0);
+		outputTable.putNumber("angle", previousAngle);
 		return src;
 	    } catch (Exception e) {
 		e.printStackTrace();

@@ -24,6 +24,7 @@ import org.opencv.imgproc.Imgproc;
 
 import edu.normality.smartdashboard.editedview.EditedWebcamViewer;
 import edu.normality.smartdashboard.foxacidconfigure.FOXACIDCONFIGURE;
+import edu.normality.smartdashboard.foxacidconfigure.ShooterAngleError;
 import edu.normality.smartdashboard.foxacidconfigure.ShooterData;
 import edu.wpi.first.smartdashboard.gui.DashboardPrefs;
 import edu.wpi.first.smartdashboard.gui.elements.VideoStreamViewerExtension;
@@ -65,7 +66,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     public static final double	    kCameraAngle       = 32;					   // 32.64
 
     // shooter offset
-    public static final double	    kShooterOffsetDegX = 2.5,
+    public static final double	    kShooterOffsetDegX = 0,
             kShooterOffsetDegY = 0,
             kAngleOffset = 0;
 
@@ -298,6 +299,9 @@ public class FOXACID extends VideoStreamViewerExtension {
 	} catch (ArrayIndexOutOfBoundsException e) {
 	    e.printStackTrace();
 	}
+	
+	double error = ShooterAngleError.calculateError(range);
+	azimuth = error + azimuth;
 
 	try {
 	    outputTable.putNumber("distanceFromTarget", range);

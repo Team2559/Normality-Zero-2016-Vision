@@ -15,7 +15,7 @@ package edu.normality.smartdashboard.foxacidconfigure;
  */
 public class ShooterAngleError {
 	// distance from A to B is side c (opposite c) - center shooter to camera
-	private static final double c = 8;
+	private static final double c = 7.65;
 
 	// BC = distance from camera to tower - will be provided by user in function
 	// AC = distance from center shooter to tower - is unknown

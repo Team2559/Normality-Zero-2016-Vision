@@ -165,6 +165,9 @@ public class FOXACID extends VideoStreamViewerExtension {
 	}
     }
 
+    // Remember the last angle rather than resetting to 45 if we lose the target
+    double previousAngle = 45;
+    
     private Mat findTower(Mat src) {
 	Rect bestTarget = new Rect();
 	double startTime = System.currentTimeMillis();
@@ -221,7 +224,7 @@ public class FOXACID extends VideoStreamViewerExtension {
 		outputTable.putNumber("distanceFromTarget", 0);
 		outputTable.putNumber("azimuth", 0);
 		outputTable.putNumber("altitude", 0);
-		outputTable.putNumber("angle", 0);
+		outputTable.putNumber("angle", previousAngle);
 		return src;
 	    } catch (Exception e) {
 		e.printStackTrace();
@@ -292,9 +295,10 @@ public class FOXACID extends VideoStreamViewerExtension {
 	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + kShooterOffsetDegX;
 	double altitude = distanceCenterY * kVerticalFOV / 2.0 + kShooterOffsetDegY;
 	double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle) * Math.PI / 180.0);
-	double angle = 45;
+	double angle = previousAngle;
 	try {
 	    angle = ShooterData.getShooterAngle(range, FOXACIDCONFIGURE.hitDistanceSlider.getValue());
+	    previousAngle = angle;
 	} catch (ArrayIndexOutOfBoundsException e) {
 	    e.printStackTrace();
 	}

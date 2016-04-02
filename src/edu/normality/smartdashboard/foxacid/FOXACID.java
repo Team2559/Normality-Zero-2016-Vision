@@ -66,7 +66,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     public static final double	    kCameraAngle       = 32;					   // 32.64
 
     // shooter offset
-    public static final double	    kShooterOffsetDegX = 3,
+    public static final double	    kShooterOffsetDegX = 4.5,
             kShooterOffsetDegY = 0,
             kAngleOffset = 0;
 
@@ -125,8 +125,13 @@ public class FOXACID extends VideoStreamViewerExtension {
 			    img = EditedWebcamViewer.getLatestCapture();
 			else
 			    img = ImageIO.read(new File("strawberry.jpg"));
-
-			byte[] data = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+			byte[] data;
+			try {
+			    data = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+			} catch (Exception e) {
+			    data = new byte[]{0, 1};
+			    System.out.println(e);
+			}
 			Mat original = new Mat(img.getHeight(), img.getWidth(), CvType.CV_8UC3);
 			original.put(0, 0, data);
 			Mat processed = findTower(original);

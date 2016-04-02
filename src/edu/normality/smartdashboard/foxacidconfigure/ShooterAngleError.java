@@ -29,7 +29,7 @@ public class ShooterAngleError {
 	// If the camera is behind the shooter then the angle is smaller. i.e. < 90
 
 	// I'm assuming the shooter is a bit behind the camera
-	private static double B = 90;
+	private static double B = 60;
 	private static double Brad = Math.toRadians(B);
 
 	// A = local angle between shooter and tower. Will be larger the further

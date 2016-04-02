@@ -66,7 +66,7 @@ public class FOXACID extends VideoStreamViewerExtension {
     public static final double	    kCameraAngle       = 32;					   // 32.64
 
     // shooter offset
-    public static final double	    kShooterOffsetDegX = 0,
+    public static final double	    kShooterOffsetDegX = 3,
             kShooterOffsetDegY = 0,
             kAngleOffset = 0;
 
@@ -293,7 +293,8 @@ public class FOXACID extends VideoStreamViewerExtension {
 	double distanceCenterY = (bestTarget.tl().y + bestTarget.br().y) / 2;
 	distanceCenterY = -((2 * (distanceCenterY / src.height())) - 1);
 
-	double azimuth = distanceCenterX * kHorizontalFOV / 2.0 + kShooterOffsetDegX;
+	double azimuth = distanceCenterX * kHorizontalFOV / 2.0;
+	azimuth = azimuth + kShooterOffsetDegX;
 	double altitude = distanceCenterY * kVerticalFOV / 2.0 + kShooterOffsetDegY;
 	double range = (kTopTargetHeight - kTopCameraHeight) / Math.tan((distanceCenterY * kVerticalFOV / 2.0 + kCameraAngle) * Math.PI / 180.0);
 	double angle = previousAngle;
@@ -358,20 +359,6 @@ public class FOXACID extends VideoStreamViewerExtension {
 
     public void init() {
 	setPreferredSize(new Dimension(resolution[0], resolution[1]));
-	angleTable = new TreeMap<Double, Double>();
-	angleTable.put(110.0, 80.0 + kAngleOffset);
-	angleTable.put(120.0, 75.0 + kAngleOffset);
-	angleTable.put(130.0, 70.0 + kAngleOffset);
-	angleTable.put(140.0, 65.0 + kAngleOffset);
-	angleTable.put(150.0, 60.0 + kAngleOffset);
-	angleTable.put(160.0, 55.0 + kAngleOffset);
-	angleTable.put(170.0, 50.0 + kAngleOffset);
-	angleTable.put(180.0, 50.0 + kAngleOffset);
-	angleTable.put(190.0, 50.0 + kAngleOffset);
-	angleTable.put(200.0, 50.0 + kAngleOffset);
-	angleTable.put(210.0, 50.0 + kAngleOffset);
-	angleTable.put(220.0, 50.0 + kAngleOffset);
-	angleTable.put(230.0, 50.0 + kAngleOffset); // 230 in = 19.1667 feet
 	this.ipString = this.ipProperty.getSaveValue();
 	this.bgThread.start();
 	revalidate();

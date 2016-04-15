@@ -31,7 +31,7 @@ public class FOXACIDCONFIGURE extends StaticWidget {
 							kMinWidth = 45,
 							kMinAspect = 275,
 							kMaxAspect = 1000,
-							kHitDistance = 97;
+							kHitDistance = 100;
 
 	public static JSlider minHueSlider;
 
